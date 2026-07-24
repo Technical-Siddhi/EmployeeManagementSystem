@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Unauthorized from "./pages/Unauthorized";
+import Landing from "./pages/Landing";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import Employees from "./pages/Employees";
@@ -25,7 +26,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
-          <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="/" element={<Landing />} />
 
           <Route
             path="/admin/dashboard"
