@@ -1,70 +1,49 @@
-# Getting Started with Create React App
+# Employee Attendance System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Full-stack modern app with React/Tailwind frontend + Express/MongoDB backend.
 
-## Available Scripts
+## Features
+- Responsive modern UI (Tailwind, Recharts, animations)
+- Admin/Employee login/register (JWT auth)
+- Dashboard with charts/table
+- Clock in/out attendance tracking
+- Protected routes
 
-In the project directory, you can run:
+## Quick Start
 
-### `npm start`
+1. **MongoDB Atlas**:
+   - Create free cluster: https://cloud.mongodb.com
+   - Get connection string (Network Access IP 0.0.0.0/0)
+   - Copy `backend/.env.example` → `backend/.env`
+   - Fill `MONGO_URI` and `JWT_SECRET=yourlongrandomsecretkey`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+2. **Backend**:
+   ```
+   cd backend
+   npm install
+   ```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+3. **Frontend + Backend** (concurrent):
+   ```
+   npm run dev
+   ```
+   - Frontend: http://localhost:3000
+   - Backend: http://localhost:5000
 
-### `npm test`
+## Test Mock (no DB):
+- Login: admin@company.com / admin123
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## API Endpoints
+- POST /api/auth/register
+- POST /api/auth/login
+- GET /api/auth/me
+- GET /api/attendance
+- POST /api/attendance/clockin
+- POST /api/attendance/clockout
 
-### `npm run build`
+## Production Deploy
+- Frontend: Vercel/Netlify
+- Backend: Render/Railway + Mongo Atlas
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Enjoy! 🚀
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
