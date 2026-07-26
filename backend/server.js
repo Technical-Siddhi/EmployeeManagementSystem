@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth');
 const attendanceRoutes = require('./routes/attendance');
 const usersRoutes = require('./routes/users');
 const leavesRoutes = require('./routes/leaves');
+const profileRoutes = require('./routes/profile');
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/attendance', attendanceRoutes); // TODO
 app.use('/api/users', usersRoutes);
 app.use('/api/leaves', leavesRoutes);
+app.use('/api/profile', profileRoutes);
 
 // DB Connection with retry and specific DB
 
