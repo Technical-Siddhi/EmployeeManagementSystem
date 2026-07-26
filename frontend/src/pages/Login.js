@@ -60,7 +60,7 @@ const Login = () => {
       toast.success('Filled Admin demo credentials!');
     } else if (role === 'hr') {
       setEmail('hr@company.com');
-      setPassword('hr123');
+      setPassword('hr123456');
       toast.success('Filled HR demo credentials!');
     } else if (role === 'employee') {
       setEmail('employee@company.com');
