@@ -13,13 +13,14 @@ import Attendance from "./pages/Attendance";
 import LeaveManagement from "./pages/LeaveManagement";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import EmployeeProfile from "./pages/EmployeeProfile";
 
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="min-h-screen bg-slate-950 text-slate-100">
         <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -41,6 +42,14 @@ function App() {
             element={
               <ProtectedRoute roles={['admin','hr']}>
                 <Employees />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/employees/:id"
+            element={
+              <ProtectedRoute roles={['admin','hr','employee']}>
+                <EmployeeProfile />
               </ProtectedRoute>
             }
           />
