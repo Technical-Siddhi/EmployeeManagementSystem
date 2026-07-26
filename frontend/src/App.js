@@ -54,6 +54,14 @@ function App() {
             }
           />
           <Route
+            path="/admin/employees/:id/documents"
+            element={
+              <ProtectedRoute roles={['admin','hr','employee']}>
+                <EmployeeProfile defaultTab="documents" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/attendance"
             element={
               <ProtectedRoute roles={['admin','employee','hr']}>

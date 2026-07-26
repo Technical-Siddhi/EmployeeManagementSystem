@@ -22,14 +22,14 @@ import PerformanceCard from '../components/profile/PerformanceCard';
 import ActivityTimeline from '../components/profile/ActivityTimeline';
 import ProfileSkeleton from '../components/profile/ProfileSkeleton';
 
-const EmployeeProfile = () => {
+const EmployeeProfile = ({ defaultTab = 'overview' }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const userRole = useAuthStore((state) => state.role) || user?.role || 'admin';
   const token = useAuthStore((state) => state.token);
 
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -239,7 +239,8 @@ const EmployeeProfile = () => {
                 { id: 'overview', label: 'Overview & Summaries', icon: Activity },
                 { id: 'personal', label: 'Personal & Professional', icon: User },
                 { id: 'education', label: 'Education & Experience', icon: GraduationCap },
-                { id: 'skills-docs', label: 'Skills & Documents', icon: Code },
+                { id: 'skills', label: 'Skills & Endorsements', icon: Code },
+                { id: 'documents', label: 'Enterprise Documents', icon: FileText },
                 ...(userRole !== 'employee' ? [{ id: 'salary', label: 'Salary & Compensation', icon: DollarSign }] : []),
               ].map((tab) => {
                 const IconComp = tab.icon;
@@ -325,9 +326,9 @@ const EmployeeProfile = () => {
                 </motion.div>
               )}
 
-              {activeTab === 'skills-docs' && (
+              {activeTab === 'skills' && (
                 <motion.div
-                  key="skills-docs"
+                  key="skills"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
@@ -338,11 +339,20 @@ const EmployeeProfile = () => {
                     onAddSkill={handleAddSkill}
                     onDeleteSkill={handleDeleteSkill}
                   />
+                </motion.div>
+              )}
 
+              {activeTab === 'documents' && (
+                <motion.div
+                  key="documents"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-8"
+                >
                   <DocumentsSection
+                    employeeId={id || profile.employeeId || 'EMP-1004'}
                     documents={profile.documents}
-                    onUploadDocument={handleUploadDocument}
-                    onDeleteDocument={handleDeleteDocument}
                   />
                 </motion.div>
               )}
