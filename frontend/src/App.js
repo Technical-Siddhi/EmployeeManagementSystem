@@ -14,6 +14,7 @@ import LeaveManagement from "./pages/LeaveManagement";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import EmployeeProfile from "./pages/EmployeeProfile";
+import OrganizationManagement from "./pages/OrganizationManagement";
 
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -96,6 +97,14 @@ function App() {
 
 
 
+          <Route
+            path="/admin/organization"
+            element={
+              <ProtectedRoute roles={['admin','hr']}>
+                <OrganizationManagement />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </div>

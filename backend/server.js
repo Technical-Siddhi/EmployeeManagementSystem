@@ -10,6 +10,7 @@ const usersRoutes = require('./routes/users');
 const leavesRoutes = require('./routes/leaves');
 const profileRoutes = require('./routes/profile');
 const documentRoutes = require('./routes/documents');
+const organizationRoutes = require('./routes/organization');
 
 dotenv.config();
 
@@ -48,6 +49,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api/leaves', leavesRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/documents', documentRoutes);
+app.use('/api/organization', organizationRoutes);
 
 // DB Connection with retry and specific DB
 
