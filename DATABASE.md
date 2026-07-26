@@ -1,12 +1,18 @@
-# AttendX Enterprise Database Documentation
+# AttendX Enterprise Database & ER Diagram Documentation
 
-**MongoDB Atlas Database Architecture & Entity Relationship Specifications**
+**AI-Powered Enterprise Workforce Management Platform**
+
+![Database ER Diagram](./database-er-diagram.svg)
 
 ---
 
-## 1. High-Level Database Architecture
+## 📁 Diagram Artifact Files
+- 🖼️ **SVG ER Diagram**: [database-er-diagram.svg](./database-er-diagram.svg)
+- 📐 **Draw.io Editable File**: [database-er-diagram.drawio](./database-er-diagram.drawio)
 
-AttendX utilizes **MongoDB Atlas** as its multi-tenant document database. The schema is organized into modular domain collections linked via Mongoose `ObjectId` references (`ref`), utilizing embedding for performance-critical child entities and referencing for normalized core domain entities.
+---
+
+## 1. High-Level Database Diagram
 
 ```text
 +-----------------------------------------------------------------------------------+
@@ -18,16 +24,16 @@ AttendX utilizes **MongoDB Atlas** as its multi-tenant document database. The sc
 ┌───────────────┐      ┌───────────────┐      ┌───────────────┐      ┌───────────────┐
 │ Core & Auth   │      │ Workforce & HR│      │ Operations    │      │ Intelligence  │
 ├───────────────┤      ├───────────────┤      ├───────────────┤      ├───────────────┤
-│ Users         │      │ Employees     │      │ Attendance    │      │ Help Desk     │
-│ Roles         │      │ Departments   │      │ Leaves        │      │ Audit Logs    │
-│ Permissions   │      │ Teams         │      │ Payroll       │      │ AI Assistant  │
-│ Documents     │      │ Designations  │      │ Performance   │      │ Notifications │
+│ User          │      │ Employee      │      │ Attendance    │      │ Ticket        │
+│ Role          │      │ Department    │      │ Leave         │      │ AuditLog      │
+│ Permission    │      │ Team          │      │ Payroll       │      │ AIConversation│
+│ Document      │      │ Designation   │      │ Performance   │      │ Notification  │
 └───────────────┘      └───────────────┘      └───────────────┘      └───────────────┘
 ```
 
 ---
 
-## 2. Complete Entity Relationship Diagram (ERD)
+## 2. Complete Enterprise ER Diagram
 
 ```text
 ┌─────────────────┐       1:1        ┌─────────────────┐       1:M        ┌─────────────────┐
@@ -61,7 +67,7 @@ AttendX utilizes **MongoDB Atlas** as its multi-tenant document database. The sc
 
 ---
 
-## 3. Employee Relationship Diagram
+## 3. Employee Module ER Diagram
 
 ```text
                      ┌──────────────────┐
@@ -79,209 +85,138 @@ AttendX utilizes **MongoDB Atlas** as its multi-tenant document database. The sc
                          └──────────────────┘
 ```
 
-| Parent Entity | Child Entity | Cardinality | Join Reference Key | Description |
-| --- | --- | --- | --- | --- |
-| `Employee` | `User` | 1:1 | `user` (`ObjectId`) | Links authentication identity to HR employee profile |
-| `Employee` | `Department` | M:1 | `department` (`ObjectId`) | Department organizational unit mapping |
-| `Employee` | `Team` | M:1 | `team` (`ObjectId`) | Functional team assignment |
-| `Employee` | `Designation` | M:1 | `designation` (`ObjectId`) | Employee job title and pay grade |
-| `Employee` | `EmployeeProfile` | 1:1 | `employee` (`ObjectId`) | Detailed biography, address, emergency contacts |
-| `Employee` | `EmployeeDocument` | 1:M | `employee` (`ObjectId`) | Uploaded verification documents and contracts |
+| Collection Name | Primary Key | Foreign References | Important Fields | Indexes | Relationship Type |
+| --- | --- | --- | --- | --- | --- |
+| `Employee` | `_id` | `user`, `department`, `team`, `designation` | `firstName`, `lastName`, `status` | `{ user: 1 }`, `{ department: 1 }` | 1:1 (User), M:1 (Dept/Team) |
+| `EmployeeProfile` | `_id` | `employee` | `bio`, `emergencyContacts`, `address` | `{ employee: 1 }` (Unique) | 1:1 (Employee) |
+| `EmployeeDocument` | `_id` | `employee` | `title`, `url`, `verificationHash` | `{ employee: 1 }` | 1:M (Employee) |
 
 ---
 
-## 4. Attendance Database Diagram
+## 4. Attendance Module ER Diagram
 
 ```text
-┌──────────────────┐
-│     Employee     │
-└────────┬─────────┘
-         │ 1:M
-         ▼
-┌──────────────────┐ 1:1 ┌──────────────────┐
-│   Attendance     │ ───►│   Shift Roster   │
-└────────┬─────────┘     └──────────────────┘
-         │ 1:M
-         ▼
-┌──────────────────┐ 1:M ┌──────────────────┐
-│  Break Session   │ ───►│ Overtime Record  │
-└──────────────────┘     └──────────────────┘
-```
-
-| Parent Entity | Child Entity | Cardinality | Join Reference Key | Description |
-| --- | --- | --- | --- | --- |
-| `Employee` | `Attendance` | 1:M | `employee` (`ObjectId`) | Daily check-in/check-out logs |
-| `Attendance` | `Shift` | M:1 | `shift` (`ObjectId`) | Assigned shift schedule and grace period |
-| `Attendance` | `BreakSession` | 1:M | `attendance` (`ObjectId`) | Intra-day break timestamps (lunch, tea) |
-| `Attendance` | `Overtime` | 1:M | `attendance` (`ObjectId`) | Approved extra hours worked |
-
----
-
-## 5. Payroll Database Diagram
-
-```text
-┌──────────────────┐ 1:1 ┌──────────────────┐
-│ SalaryStructure  │ ───►│    Employee      │
-└──────────────────┘     └────────┬─────────┘
-                                  │ 1:M
-                                  ▼
-┌──────────────────┐ 1:M ┌──────────────────┐
-│     Payslip      │ ◄───│     Payroll      │
-└──────────────────┘     └────────┬─────────┘
+┌──────────────────┐ 1:M ┌──────────────────┐ 1:1 ┌──────────────────┐
+│     Employee     │ ───►│    Attendance    │ ───►│   Shift Roster   │
+└──────────────────┘     └────────┬─────────┘     └──────────────────┘
                                   │ 1:M
                                   ▼
                          ┌──────────────────┐
-                         │ Bonus & Deduction│
+                         │   BreakSession   │
                          └──────────────────┘
 ```
 
-| Parent Entity | Child Entity | Cardinality | Join Reference Key | Description |
-| --- | --- | --- | --- | --- |
-| `Employee` | `SalaryStructure` | 1:1 | `employee` (`ObjectId`) | Basic, HRA, special allowance definitions |
-| `Payroll` | `Employee` | M:1 | `employee` (`ObjectId`) | Monthly payroll execution reference |
-| `Payroll` | `Payslip` | 1:1 | `payroll` (`ObjectId`) | Generated PDF slip hash & distribution state |
-| `Payroll` | `Bonus` / `Deduction` | 1:M | `payroll` (`ObjectId`) | Line item adjustments applied to month |
+| Collection Name | Primary Key | Foreign References | Important Fields | Indexes | Relationship Type |
+| --- | --- | --- | --- | --- | --- |
+| `Attendance` | `_id` | `employee`, `shift` | `date`, `checkIn`, `checkOut`, `status` | `{ employee: 1, date: -1 }` (Unique) | 1:M (Employee), M:1 (Shift) |
+| `Shift` | `_id` | N/A | `name`, `startTime`, `endTime`, `graceMinutes` | `{ name: 1 }` | 1:M (Attendance) |
+| `BreakSession` | `_id` | `attendance` | `startTime`, `endTime`, `type` | `{ attendance: 1 }` | 1:M (Attendance) |
 
 ---
 
-## 6. Performance Module Diagram
+## 5. Leave Module ER Diagram
 
 ```text
-┌──────────────────┐ 1:M ┌──────────────────┐
-│     Employee     │ ───►│PerformanceReview │
-└────────┬─────────┘     └────────┬─────────┘
-         │                        │
-         │ 1:M                    │ 1:M
-         ▼                        ▼
-┌──────────────────┐     ┌──────────────────┐
-│       Goal       │ ───►│    Feedback360   │
-└────────┬─────────┘     └──────────────────┘
-         │ 1:M
-         ▼
-┌──────────────────┐
-│       KPI        │
-└──────────────────┘
+┌──────────────────┐ 1:M ┌──────────────────┐ M:1 ┌──────────────────┐
+│     Employee     │ ───►│      Leave       │ ───►│   LeavePolicy    │
+└──────────────────┘     └──────────────────┘     └──────────────────┘
 ```
 
+| Collection Name | Primary Key | Foreign References | Important Fields | Indexes | Relationship Type |
+| --- | --- | --- | --- | --- | --- |
+| `Leave` | `_id` | `applicant`, `approvedBy` | `type`, `startDate`, `endDate`, `status` | `{ applicant: 1, status: 1 }` | 1:M (Employee) |
+| `LeaveBalance` | `_id` | `employee` | `annualQuota`, `usedDays`, `pendingDays` | `{ employee: 1 }` (Unique) | 1:1 (Employee) |
+| `LeavePolicy` | `_id` | N/A | `leaveType`, `maxDaysPerYear`, `carryForward` | `{ leaveType: 1 }` | 1:M (Leave) |
+
 ---
 
-## 7. Help Desk Database Diagram
+## 6. Payroll Module ER Diagram
 
 ```text
-┌──────────────────┐
-│     Employee     │
-└────────┬─────────┘
-         │ 1:M
-         ▼
-┌──────────────────┐ 1:M ┌──────────────────┐
-│      Ticket      │ ───►│  TicketComment   │
-└────────┬─────────┘     └──────────────────┘
-         │ 1:1
-         ▼
-┌──────────────────┐
-│   TicketRating   │
-└──────────────────┘
+┌──────────────────┐ 1:1 ┌──────────────────┐ 1:M ┌──────────────────┐
+│ SalaryStructure  │ ───►│     Employee     │ ───►│     Payroll      │
+└──────────────────┘     └──────────────────┘     └────────┬─────────┘
+                                                           │ 1:1
+                                                           ▼
+                                                  ┌──────────────────┐
+                                                  │     Payslip      │
+                                                  └──────────────────┘
 ```
 
+| Collection Name | Primary Key | Foreign References | Important Fields | Indexes | Relationship Type |
+| --- | --- | --- | --- | --- | --- |
+| `SalaryStructure` | `_id` | `employee` | `baseSalary`, `hra`, `allowances` | `{ employee: 1 }` (Unique) | 1:1 (Employee) |
+| `Payroll` | `_id` | `employee` | `month`, `year`, `netPayable`, `status` | `{ employee: 1, month: 1, year: 1 }` | 1:M (Employee) |
+| `Payslip` | `_id` | `payroll` | `pdfUrl`, `verificationQR`, `generatedAt` | `{ payroll: 1 }` (Unique) | 1:1 (Payroll) |
+
 ---
 
-## 8. Audit & Security Database Diagram
+## 7. Performance Module ER Diagram
 
 ```text
-┌──────────────────┐
-│     Employee     │
-└────────┬─────────┘
+┌──────────────────┐ 1:M ┌──────────────────┐ 1:M ┌──────────────────┐
+│     Employee     │ ───►│PerformanceReview │ ───►│   Feedback360    │
+└────────┬─────────┘     └──────────────────┘     └──────────────────┘
          │ 1:M
          ▼
 ┌──────────────────┐ 1:M ┌──────────────────┐
-│    AuditLog      │ ───►│  SecurityEvent   │
+│       Goal       │ ───►│       KPI        │
 └──────────────────┘     └──────────────────┘
 ```
 
+| Collection Name | Primary Key | Foreign References | Important Fields | Indexes | Relationship Type |
+| --- | --- | --- | --- | --- | --- |
+| `PerformanceReview` | `_id` | `employee`, `reviewer` | `evaluationPeriod`, `score`, `status` | `{ employee: 1, evaluationPeriod: 1 }` | 1:M (Employee) |
+| `Goal` | `_id` | `employee` | `title`, `dueDate`, `progressPercentage` | `{ employee: 1 }` | 1:M (Employee) |
+| `KPI` | `_id` | `goal` | `metricName`, `targetValue`, `currentValue` | `{ goal: 1 }` | 1:M (Goal) |
+
 ---
 
-## 9. AI Module Database Diagram
+## 8. Help Desk Module ER Diagram
 
 ```text
-┌──────────────────┐
-│     Employee     │
-└────────┬─────────┘
-         │ 1:M
-         ▼
+┌──────────────────┐ 1:M ┌──────────────────┐ 1:M ┌──────────────────┐
+│     Employee     │ ───►│      Ticket      │ ───►│  TicketComment   │
+└──────────────────┘     └────────┬─────────┘     └──────────────────┘
+                                  │ 1:1
+                                  ▼
+                         ┌──────────────────┐
+                         │   TicketRating   │
+                         └──────────────────┘
+```
+
+| Collection Name | Primary Key | Foreign References | Important Fields | Indexes | Relationship Type |
+| --- | --- | --- | --- | --- | --- |
+| `Ticket` | `_id` | `requester`, `assignee` | `ticketNumber`, `subject`, `priority`, `status` | `{ ticketNumber: 1 }`, `{ requester: 1 }` | 1:M (Employee) |
+| `TicketComment` | `_id` | `ticket`, `author` | `commentText`, `attachments` | `{ ticket: 1 }` | 1:M (Ticket) |
+| `TicketRating` | `_id` | `ticket` | `stars`, `feedback` | `{ ticket: 1 }` (Unique) | 1:1 (Ticket) |
+
+---
+
+## 9. Audit Module ER Diagram
+
+```text
 ┌──────────────────┐ 1:M ┌──────────────────┐
-│  AIConversation  │ ───►│   AIActionLog    │
+│       User       │ ───►│     AuditLog     │
 └──────────────────┘     └──────────────────┘
 ```
 
----
-
-## 10. Complete Collection Specifications & Indexing Strategies
-
-### 1. `Users`
-- **Primary Key**: `_id` (`ObjectId`)
-- **Indexes**:
-  - `email` (Unique, Ascending)
-  - `role` (Ascending)
-- **References**: `role` -> `Role._id`
-
-### 2. `Employees`
-- **Primary Key**: `_id` (`ObjectId`)
-- **Indexes**:
-  - `user` (Unique, Ascending)
-  - `department` (Ascending)
-  - `employeeId` (Unique, Ascending)
-- **References**:
-  - `user` -> `User._id`
-  - `department` -> `Department._id`
-  - `team` -> `Team._id`
-  - `designation` -> `Designation._id`
-
-### 3. `Attendance`
-- **Primary Key**: `_id` (`ObjectId`)
-- **Indexes**:
-  - Compound Index: `{ employee: 1, date: -1 }` (Unique)
-  - `status` (Ascending)
-
-### 4. `Leaves`
-- **Primary Key**: `_id` (`ObjectId`)
-- **Indexes**:
-  - Compound Index: `{ applicant: 1, status: 1 }`
-  - `startDate` (Descending)
-
-### 5. `Payroll`
-- **Primary Key**: `_id` (`ObjectId`)
-- **Indexes**:
-  - Compound Index: `{ employee: 1, month: 1, year: 1 }` (Unique)
-
-### 6. `HelpDesk`
-- **Primary Key**: `_id` (`ObjectId`)
-- **Indexes**:
-  - `ticketNumber` (Unique, Ascending)
-  - `{ requester: 1, status: 1 }`
-
-### 7. `AuditLogs`
-- **Primary Key**: `_id` (`ObjectId`)
-- **Indexes**:
-  - `timestamp` (Descending)
-  - `user` (Ascending)
-
-### 8. `AIConversations`
-- **Primary Key**: `_id` (`ObjectId`)
-- **Indexes**:
-  - Compound Index: `{ user: 1, sessionId: 1 }`
+| Collection Name | Primary Key | Foreign References | Important Fields | Indexes | Relationship Type |
+| --- | --- | --- | --- | --- | --- |
+| `AuditLog` | `_id` | `user` | `action`, `resource`, `ipAddress`, `timestamp` | `{ timestamp: -1 }`, `{ user: 1 }` | 1:M (User) |
+| `SecurityEvent` | `_id` | `user` | `eventType`, `severity`, `details` | `{ severity: 1, timestamp: -1 }` | 1:M (User) |
 
 ---
 
-## 11. Example Mongoose Schema References
+## 10. AI Module ER Diagram
 
-```javascript
-// Employee Schema Reference Example
-const EmployeeSchema = new mongoose.Schema({
-  employeeId: { type: String, required: true, unique: true },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department', required: true },
-  team: { type: mongoose.Schema.Types.ObjectId, ref: 'Team' },
-  designation: { type: mongoose.Schema.Types.ObjectId, ref: 'Designation' },
-  status: { type: String, enum: ['Active', 'OnLeave', 'Terminated'], default: 'Active' }
-}, { timestamps: true });
+```text
+┌──────────────────┐ 1:M ┌──────────────────┐ 1:M ┌──────────────────┐
+│       User       │ ───►│  AIConversation  │ ───►│   AIActionLog    │
+└──────────────────┘     └──────────────────┘     └──────────────────┘
 ```
+
+| Collection Name | Primary Key | Foreign References | Important Fields | Indexes | Relationship Type |
+| --- | --- | --- | --- | --- | --- |
+| `AIConversation` | `_id` | `user` | `sessionId`, `messages`, `lastUpdated` | `{ user: 1, sessionId: 1 }` | 1:M (User) |
+| `AIActionLog` | `_id` | `user`, `conversation` | `actionType`, `details`, `confirmedAt` | `{ user: 1 }` | 1:M (User) |
