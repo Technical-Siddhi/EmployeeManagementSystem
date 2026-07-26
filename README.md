@@ -16,7 +16,7 @@
 
 ## 🌐 Live Demo & Deployment
 
-- **Live Platform Web App**: [https://attendx.vercel.app](https://attendx.vercel.app)
+- **Live Platform Web App**: [https://attendx-ems.vercel.app](https://attendx-ems.vercel.app)
 - **Backend API Endpoint**: `https://attendx-api.onrender.com`
 - **Interactive Swagger Docs**: `https://attendx-api.onrender.com/api/docs`
 - **System Health Check**: `https://attendx-api.onrender.com/health`
