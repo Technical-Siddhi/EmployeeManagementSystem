@@ -16,6 +16,7 @@ import Settings from "./pages/Settings";
 import EmployeeProfile from "./pages/EmployeeProfile";
 import OrganizationManagement from "./pages/OrganizationManagement";
 import PerformanceManagement from "./pages/PerformanceManagement";
+import NotificationCenter from "./pages/NotificationCenter";
 
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -111,6 +112,14 @@ function App() {
             element={
               <ProtectedRoute roles={['admin','hr','employee']}>
                 <PerformanceManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/notifications"
+            element={
+              <ProtectedRoute roles={['admin','hr','employee']}>
+                <NotificationCenter />
               </ProtectedRoute>
             }
           />

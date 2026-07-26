@@ -12,6 +12,7 @@ const profileRoutes = require('./routes/profile');
 const documentRoutes = require('./routes/documents');
 const organizationRoutes = require('./routes/organization');
 const performanceRoutes = require('./routes/performance');
+const notificationRoutes = require('./routes/notifications');
 
 dotenv.config();
 
@@ -52,6 +53,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/organization', organizationRoutes);
 app.use('/api/performance', performanceRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // DB Connection with retry and specific DB
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, Users, Clock, FileText, Calendar, Settings, LogOut, Shield, Sparkles, Building2, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Users, Clock, FileText, Calendar, Settings, LogOut, Shield, Sparkles, Building2, TrendingUp, Bell } from 'lucide-react';
 import useAuthStore from '../stores/useAuthStore';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -17,6 +17,7 @@ const Sidebar = ({ activePage }) => {
       { id: 'employees', icon: Users, label: 'Employees', path: '/admin/employees' },
       { id: 'organization', icon: Building2, label: 'Organization', path: '/admin/organization' },
       { id: 'performance', icon: TrendingUp, label: 'Performance', path: '/admin/performance' },
+      { id: 'notifications', icon: Bell, label: 'Notifications', path: '/admin/notifications' },
       { id: 'attendance', icon: Clock, label: 'Attendance', path: '/admin/attendance' },
       { id: 'leave', icon: Calendar, label: 'Leave Requests', path: '/admin/leave' },
       { id: 'reports', icon: FileText, label: 'Analytics & Reports', path: '/admin/reports' },
@@ -27,12 +28,14 @@ const Sidebar = ({ activePage }) => {
       { id: 'employees', icon: Users, label: 'Employees', path: '/admin/employees' },
       { id: 'organization', icon: Building2, label: 'Organization', path: '/admin/organization' },
       { id: 'performance', icon: TrendingUp, label: 'Performance', path: '/admin/performance' },
+      { id: 'notifications', icon: Bell, label: 'Notifications', path: '/admin/notifications' },
       { id: 'attendance', icon: Clock, label: 'Attendance', path: '/admin/attendance' },
       { id: 'leave', icon: Calendar, label: 'Leave Requests', path: '/admin/leave' },
       { id: 'reports', icon: FileText, label: 'Reports', path: '/admin/reports' },
       { id: 'settings', icon: Settings, label: 'Settings', path: '/admin/settings' },
     ],
     employee: [
+      { id: 'notifications', icon: Bell, label: 'Notifications', path: '/admin/notifications' },
       { id: 'performance', icon: TrendingUp, label: 'Performance', path: '/admin/performance' },
       { id: 'attendance', icon: Clock, label: 'My Attendance', path: '/admin/attendance' },
       { id: 'leave', icon: Calendar, label: 'My Leave', path: '/admin/leave' },
