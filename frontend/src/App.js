@@ -15,6 +15,7 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import EmployeeProfile from "./pages/EmployeeProfile";
 import OrganizationManagement from "./pages/OrganizationManagement";
+import PerformanceManagement from "./pages/PerformanceManagement";
 
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -102,6 +103,14 @@ function App() {
             element={
               <ProtectedRoute roles={['admin','hr']}>
                 <OrganizationManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/performance"
+            element={
+              <ProtectedRoute roles={['admin','hr','employee']}>
+                <PerformanceManagement />
               </ProtectedRoute>
             }
           />
