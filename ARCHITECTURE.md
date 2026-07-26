@@ -3,20 +3,15 @@
 ## Architecture Diagram Overview
 
 ```text
-[ React Frontend (Tailwind + Lucide) ]
-                 │
-            (HTTPS / JSON)
-                 │
-                 ▼
-[ Express.js REST API & Middlewares ]
-   ├── Helmet & Security Headers
-   ├── Rate Limiting & Mongo Sanitize
-   ├── Morgan & Winston Logging
-   └── Swagger OpenAPI Specs (/api/docs)
-                 │
-                 ├──► [ MongoDB Atlas Database ]
-                 ├──► [ Cloudinary File Storage ]
-                 └──► [ OpenAI Assistant Engine ]
+React Frontend
+        │
+        ▼
+Express API
+        │
+        ├──────── MongoDB Atlas
+        ├──────── Cloudinary
+        ├──────── OpenAI
+        └──────── Socket.io
 ```
 
 ## Security & RBAC Guard Rails

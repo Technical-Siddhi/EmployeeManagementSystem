@@ -42,22 +42,25 @@
 
 ## 🏗️ Architecture Diagram
 
+```text
+React Frontend
+        │
+        ▼
+Express API
+        │
+        ├──────── MongoDB Atlas
+        ├──────── Cloudinary
+        ├──────── OpenAI
+        └──────── Socket.io
+```
+
 ```mermaid
 graph TD
-    A[React 18 Frontend Client] -->|HTTPS / JSON / WebSocket| B[Express.js API Gateway & Security Layer]
-    B --> C[Helmet & Rate Limiter & Compression]
-    B --> D[Winston & Morgan Logging System]
-    B --> E[Swagger OpenAPI Specs /api/docs]
-    
-    B -->|Mongoose ODM| F[(MongoDB Atlas Database)]
-    B -->|SDK Integration| G[Cloudinary Document Vault]
-    B -->|Natural Language| H[OpenAI AI Copilot Engine]
-
-    subgraph Security & Monitoring
-        C
-        D
-        E
-    end
+    A[React Frontend] -->|HTTPS / REST / WS| B[Express API]
+    B -->|Database| C[(MongoDB Atlas)]
+    B -->|File Storage| D[Cloudinary]
+    B -->|AI Engine| E[OpenAI]
+    B -->|Real-Time| F[Socket.io]
 ```
 
 ---
