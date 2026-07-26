@@ -64,6 +64,82 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// @route   POST api/auth/google
+// @desc    Google OAuth Sign-In for Existing Employees ONLY
+router.post('/google', async (req, res) => {
+  const { idToken } = req.body;
+
+  if (!idToken) {
+    return res.status(400).json({ success: false, message: 'Google ID Token is required' });
+  }
+
+  try {
+    const { verifyGoogleToken } = require('../services/googleAuthService');
+    const AuditLog = require('../models/AuditLog');
+
+    const googlePayload = await verifyGoogleToken(idToken);
+    const user = await User.findOne({ email: googlePayload.email });
+
+    if (!user) {
+      // Log Security Audit Failure Event
+      try {
+        await AuditLog.create({
+          action: 'LOGIN_GOOGLE_FAILED',
+          category: 'Security',
+          details: `Unregistered Google email authentication attempt: ${googlePayload.email}`,
+          ipAddress: req.ip || req.connection.remoteAddress,
+          status: 'Failure',
+        });
+      } catch (logErr) {}
+
+      return res.status(403).json({
+        success: false,
+        message: 'This email is not registered. Please contact your administrator.',
+      });
+    }
+
+    // Existing employee account found -> Update Google profile fields
+    user.googleId = googlePayload.googleId;
+    user.provider = 'google';
+    if (googlePayload.avatar) user.avatar = googlePayload.avatar;
+    user.emailVerified = true;
+    await user.save();
+
+    const token = signToken({ userId: user._id, role: user.role });
+
+    // Log Audit Log Success Event
+    try {
+      await AuditLog.create({
+        user: user._id,
+        userEmail: user.email,
+        userName: user.name,
+        userRole: user.role,
+        action: 'LOGIN_GOOGLE_SUCCESS',
+        category: 'Security',
+        details: `Successful Google OAuth login for ${user.email}`,
+        ipAddress: req.ip || req.connection.remoteAddress,
+        status: 'Success',
+      });
+    } catch (logErr) {}
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+        department: user.department,
+        avatar: user.avatar || googlePayload.avatar,
+        provider: user.provider,
+      },
+    });
+  } catch (err) {
+    res.status(401).json({ success: false, message: `Google authentication failed: ${err.message}` });
+  }
+});
+
 // @route   POST api/auth/logout
 // @desc    Client-side logout (stateless JWT)
 router.post('/logout', async (_req, res) => {

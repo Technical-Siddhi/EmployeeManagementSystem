@@ -22,12 +22,16 @@ import AuditLogs from "./pages/AuditLogs";
 import HelpDeskManagement from "./pages/HelpDeskManagement";
 import AIAssistant from "./pages/AIAssistant";
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import ProtectedRoute from './components/ProtectedRoute';
+
+const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || 'dummy_client_id.apps.googleusercontent.com';
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-slate-950 text-slate-100">
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <Router>
+        <div className="min-h-screen bg-slate-950 text-slate-100">
         <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -163,6 +167,7 @@ function App() {
         </Routes>
       </div>
     </Router>
+    </GoogleOAuthProvider>
   );
 }
 

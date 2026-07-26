@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: function() { return this.provider === 'local'; },
     minlength: 6,
   },
   role: {
@@ -18,12 +18,22 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'hr', 'employee'],
     default: 'employee',
   },
-
   name: {
     type: String,
     required: true,
   },
   department: String,
+  googleId: String,
+  provider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local',
+  },
+  avatar: String,
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
 }, { timestamps: true });
 
 // Hash password before save

@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import useAuthStore from '../stores/useAuthStore';
 import toast from 'react-hot-toast';
+import axios from 'axios';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -275,6 +277,49 @@ const Login = () => {
                   <span>{loading ? 'Authenticating...' : 'Sign In to Account'}</span>
                 </button>
               </form>
+
+              {/* Google Sign-In Divider & Button */}
+              <div className="my-6 flex items-center">
+                <div className="flex-1 border-t border-slate-800"></div>
+                <span className="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Or Continue with Google
+                </span>
+                <div className="flex-1 border-t border-slate-800"></div>
+              </div>
+
+              <div className="flex justify-center">
+                <GoogleLogin
+                  onSuccess={async (credentialResponse) => {
+                    if (!credentialResponse.credential) return;
+                    setLoading(true);
+                    try {
+                      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+                      const res = await axios.post(`${API_BASE}/api/auth/google`, {
+                        idToken: credentialResponse.credential,
+                      });
+
+                      if (res.data.success) {
+                        localStorage.setItem('token', res.data.token);
+                        useAuthStore.setState({ token: res.data.token, user: res.data.user });
+                        toast.success('Signed in with Google!');
+                        navigate('/admin/dashboard');
+                      }
+                    } catch (err) {
+                      const msg = err.response?.data?.message || 'Google authentication failed';
+                      toast.error(msg);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  onError={() => {
+                    toast.error('Google Sign-In failed');
+                  }}
+                  theme="filled_dark"
+                  size="large"
+                  text="continue_with"
+                  shape="pill"
+                />
+              </div>
 
               <div className="mt-6 text-center text-xs text-slate-400">
                 Don't have an account yet?{' '}
