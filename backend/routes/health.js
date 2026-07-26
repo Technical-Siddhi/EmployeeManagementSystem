@@ -7,7 +7,7 @@ const router = express.Router();
 // ==========================================
 // ENTERPRISE HEALTH CHECK ENDPOINT (GET /health)
 // ==========================================
-router.get('/health', async (req, res) => {
+router.get('/', async (req, res) => {
   const startTime = Date.now();
   let dbStatus = 'Disconnected';
   let dbPingMs = 0;

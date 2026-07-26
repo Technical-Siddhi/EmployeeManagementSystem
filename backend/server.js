@@ -116,12 +116,14 @@ const conn = await mongoose.connect(process.env.MONGO_URI, {
   }
 };
 
-connectDB();
+if (process.env.NODE_ENV !== 'test') {
+  connectDB();
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Backend running on port ${PORT}`);
-});
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Backend running on port ${PORT}`);
+  });
+}
 
 module.exports = app;
 
