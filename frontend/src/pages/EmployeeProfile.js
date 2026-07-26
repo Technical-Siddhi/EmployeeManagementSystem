@@ -34,15 +34,13 @@ const EmployeeProfile = ({ defaultTab = 'overview' }) => {
   const [error, setError] = useState(null);
   const [profile, setProfile] = useState(null);
 
-  useEffect(() => {
-    fetchProfile();
-  }, [id]);
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
   const fetchProfile = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`http://localhost:5000/api/profile/${id}`, {
+      const res = await axios.get(`${API_URL}/api/profile/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProfile(res.data);
@@ -131,75 +129,75 @@ const EmployeeProfile = ({ defaultTab = 'overview' }) => {
   // Handlers
   const handleUpdateHeader = (data) => {
     setProfile(prev => ({ ...prev, ...data }));
-    axios.put(`http://localhost:5000/api/profile/${id}`, data, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    axios.put(`${API_URL}/api/profile/${id}`, data, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
   };
 
   const handleToggleStatus = (newStatus) => {
     setProfile(prev => ({ ...prev, status: newStatus }));
     toast.success(`Employee status set to ${newStatus}`);
-    axios.patch(`http://localhost:5000/api/profile/${id}/status`, { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    axios.patch(`${API_URL}/api/profile/${id}/status`, { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
   };
 
   const handleUpdatePersonal = (personalData) => {
     setProfile(prev => ({ ...prev, personalInfo: personalData }));
-    axios.put(`http://localhost:5000/api/profile/${id}`, { personalInfo: personalData }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    axios.put(`${API_URL}/api/profile/${id}`, { personalInfo: personalData }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
   };
 
   const handleUpdateProfessional = (profData) => {
     setProfile(prev => ({ ...prev, professionalInfo: profData }));
-    axios.put(`http://localhost:5000/api/profile/${id}`, { professionalInfo: profData }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    axios.put(`${API_URL}/api/profile/${id}`, { professionalInfo: profData }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
   };
 
   const handleAddEducation = (edu) => {
     const newItem = { _id: Date.now().toString(), ...edu };
     setProfile(prev => ({ ...prev, education: [...(prev.education || []), newItem] }));
-    axios.post(`http://localhost:5000/api/profile/${id}/education`, edu, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    axios.post(`${API_URL}/api/profile/${id}/education`, edu, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
   };
 
   const handleDeleteEducation = (eduId) => {
     setProfile(prev => ({ ...prev, education: prev.education.filter(e => e._id !== eduId) }));
     toast.success('Education record deleted');
-    axios.delete(`http://localhost:5000/api/profile/${id}/education/${eduId}`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    axios.delete(`${API_URL}/api/profile/${id}/education/${eduId}`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
   };
 
   const handleAddExperience = (exp) => {
     const newItem = { _id: Date.now().toString(), ...exp };
     setProfile(prev => ({ ...prev, experience: [...(prev.experience || []), newItem] }));
-    axios.post(`http://localhost:5000/api/profile/${id}/experience`, exp, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    axios.post(`${API_URL}/api/profile/${id}/experience`, exp, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
   };
 
   const handleDeleteExperience = (expId) => {
     setProfile(prev => ({ ...prev, experience: prev.experience.filter(e => e._id !== expId) }));
     toast.success('Work experience deleted');
-    axios.delete(`http://localhost:5000/api/profile/${id}/experience/${expId}`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    axios.delete(`${API_URL}/api/profile/${id}/experience/${expId}`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
   };
 
   const handleAddSkill = (skill) => {
     setProfile(prev => ({ ...prev, skills: [...(prev.skills || []), skill] }));
-    axios.post(`http://localhost:5000/api/profile/${id}/skills`, { skill }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    axios.post(`${API_URL}/api/profile/${id}/skills`, { skill }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
   };
 
   const handleDeleteSkill = (skill) => {
     setProfile(prev => ({ ...prev, skills: prev.skills.filter(s => s !== skill) }));
     toast.success(`Skill '${skill}' removed`);
-    axios.delete(`http://localhost:5000/api/profile/${id}/skills/${skill}`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    axios.delete(`${API_URL}/api/profile/${id}/skills/${skill}`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
   };
 
   const handleUploadDocument = (doc) => {
     const newItem = { _id: Date.now().toString(), ...doc };
     setProfile(prev => ({ ...prev, documents: [newItem, ...(prev.documents || [])] }));
-    axios.post(`http://localhost:5000/api/profile/${id}/documents`, doc, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    axios.post(`${API_URL}/api/profile/${id}/documents`, doc, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
   };
 
   const handleDeleteDocument = (docId) => {
     setProfile(prev => ({ ...prev, documents: prev.documents.filter(d => d._id !== docId) }));
     toast.success('Document removed');
-    axios.delete(`http://localhost:5000/api/profile/${id}/documents/${docId}`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    axios.delete(`${API_URL}/api/profile/${id}/documents/${docId}`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
   };
 
   const handleUpdateSalary = (salaryObj) => {
     setProfile(prev => ({ ...prev, salaryInfo: salaryObj }));
-    axios.put(`http://localhost:5000/api/profile/${id}/salary`, { salaryInfo: salaryObj }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    axios.put(`${API_URL}/api/profile/${id}/salary`, { salaryInfo: salaryObj }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
   };
 
   return (

@@ -55,12 +55,14 @@ const DocumentsSection = ({ employeeId = 'EMP-1004', documents: initialDocs = []
   const [renameTargetDoc, setRenameTargetDoc] = useState(null);
   const [renameTitle, setRenameTitle] = useState('');
 
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
   // 1. Fetch Categories & Employee Documents
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
     try {
       // Fetch Custom & Standard Categories
-      const catRes = await axios.get('http://localhost:5000/api/documents/categories/all');
+      const catRes = await axios.get(`${API_URL}/api/documents/categories/all`);
       if (catRes.data && catRes.data.all) {
         setCategories(catRes.data.all);
       }
@@ -72,7 +74,7 @@ const DocumentsSection = ({ employeeId = 'EMP-1004', documents: initialDocs = []
       if (expiryFilter !== 'All') params.expired = expiryFilter;
       if (searchQuery) params.search = searchQuery;
 
-      const res = await axios.get(`http://localhost:5000/api/documents/employee/${employeeId}`, {
+      const res = await axios.get(`${API_URL}/api/documents/employee/${employeeId}`, {
         params,
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -89,7 +91,7 @@ const DocumentsSection = ({ employeeId = 'EMP-1004', documents: initialDocs = []
     } finally {
       setLoading(false);
     }
-  }, [employeeId, selectedCategory, selectedStatus, expiryFilter, searchQuery, token]);
+  }, [employeeId, selectedCategory, selectedStatus, expiryFilter, searchQuery, token, API_URL]);
 
   useEffect(() => {
     fetchDocuments();
@@ -99,7 +101,7 @@ const DocumentsSection = ({ employeeId = 'EMP-1004', documents: initialDocs = []
   const handleUploadSubmit = async (formData, replaceId = null) => {
     if (replaceId) {
       // Replace file API
-      const res = await axios.post(`http://localhost:5000/api/documents/${replaceId}/replace`, formData, {
+      const res = await axios.post(`${API_URL}/api/documents/${replaceId}/replace`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
@@ -111,7 +113,7 @@ const DocumentsSection = ({ employeeId = 'EMP-1004', documents: initialDocs = []
     } else {
       // Upload document API
       formData.append('employeeId', employeeId);
-      const res = await axios.post('http://localhost:5000/api/documents/upload', formData, {
+      const res = await axios.post(`${API_URL}/api/documents/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
@@ -138,7 +140,7 @@ const DocumentsSection = ({ employeeId = 'EMP-1004', documents: initialDocs = []
   // 4. Verify Document
   const handleVerifySubmit = async (docId, status, comments) => {
     const res = await axios.patch(
-      `http://localhost:5000/api/documents/${docId}/verify`,
+      `${API_URL}/api/documents/${docId}/verify`,
       { status, comments },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -150,7 +152,7 @@ const DocumentsSection = ({ employeeId = 'EMP-1004', documents: initialDocs = []
   // 5. Rollback Version
   const handleRollbackVersion = async (docId, targetVersion) => {
     const res = await axios.post(
-      `http://localhost:5000/api/documents/${docId}/rollback/${targetVersion}`,
+      `${API_URL}/api/documents/${docId}/rollback/${targetVersion}`,
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -163,7 +165,7 @@ const DocumentsSection = ({ employeeId = 'EMP-1004', documents: initialDocs = []
   const handleDeleteDocument = async (docId) => {
     if (window.confirm('Are you sure you want to delete this document from enterprise storage?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/documents/${docId}`, {
+        await axios.delete(`${API_URL}/api/documents/${docId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setDocuments(prev => prev.filter(d => d._id !== docId));
@@ -177,7 +179,7 @@ const DocumentsSection = ({ employeeId = 'EMP-1004', documents: initialDocs = []
   // 7. Create Custom Category
   const handleCategoryCreated = async (name, description) => {
     const res = await axios.post(
-      'http://localhost:5000/api/documents/categories',
+      `${API_URL}/api/documents/categories`,
       { name, description },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -193,7 +195,7 @@ const DocumentsSection = ({ employeeId = 'EMP-1004', documents: initialDocs = []
 
     try {
       const res = await axios.put(
-        `http://localhost:5000/api/documents/${renameTargetDoc._id}/rename`,
+        `${API_URL}/api/documents/${renameTargetDoc._id}/rename`,
         { title: renameTitle.trim() },
         { headers: { Authorization: `Bearer ${token}` } }
       );

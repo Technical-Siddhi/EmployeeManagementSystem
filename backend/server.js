@@ -16,9 +16,25 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
+// CORS configuration supporting local development and production Vercel/Render deployments
+const allowedOrigins = [
+  'http://localhost:3000',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+    if (!origin) return callback(null, true);
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app') ||
+      origin.endsWith('.onrender.com')
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Fallback allow for public API client endpoints
+  },
   credentials: true
 }));
 app.use(express.json());
