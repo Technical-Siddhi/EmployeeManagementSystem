@@ -1,195 +1,366 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, UploadCloud, Download, Eye, Trash2, Shield, Plus, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FileText, FolderPlus, UploadCloud, RefreshCw, AlertCircle } from 'lucide-react';
 
-const DocumentsSection = ({ documents = [], onUploadDocument, onDeleteDocument }) => {
+import DocumentFilter from '../documents/DocumentFilter';
+import DocumentGrid from '../documents/DocumentGrid';
+import DocumentTable from '../documents/DocumentTable';
+import UploadModal from '../documents/UploadModal';
+import PreviewModal from '../documents/PreviewModal';
+import VersionHistoryModal from '../documents/VersionHistoryModal';
+import VerificationModal from '../documents/VerificationModal';
+import CategoryManagerModal from '../documents/CategoryManagerModal';
+import useAuthStore from '../../stores/useAuthStore';
+
+const DEFAULT_CATEGORIES = [
+  'Resume',
+  'Offer Letter',
+  'Appointment Letter',
+  'Experience Letter',
+  'Aadhaar Card',
+  'PAN Card',
+  'Passport',
+  'Driving License',
+  'Educational Certificates',
+  'Salary Slips',
+  'Relieving Letter',
+  'Other Documents'
+];
+
+const DocumentsSection = ({ employeeId = 'EMP-1004', documents: initialDocs = [] }) => {
+  const token = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
+  const userRole = useAuthStore((state) => state.role) || user?.role || 'admin';
+
+  const [documents, setDocuments] = useState(initialDocs);
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [loading, setLoading] = useState(false);
+
+  // Filter States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedStatus, setSelectedStatus] = useState('All');
+  const [expiryFilter, setExpiryFilter] = useState('All');
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table'
+
+  // Modal States
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [replaceTargetDoc, setReplaceTargetDoc] = useState(null); // Document object to replace
   const [previewDoc, setPreviewDoc] = useState(null);
+  const [versionHistoryDoc, setVersionHistoryDoc] = useState(null);
+  const [verifyTargetDoc, setVerifyTargetDoc] = useState(null);
+  const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
+  const [renameTargetDoc, setRenameTargetDoc] = useState(null);
+  const [renameTitle, setRenameTitle] = useState('');
 
-  const [formData, setFormData] = useState({
-    title: '',
-    type: 'Resume',
-    fileUrl: '',
-  });
+  // 1. Fetch Categories & Employee Documents
+  const fetchDocuments = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Fetch Custom & Standard Categories
+      const catRes = await axios.get('http://localhost:5000/api/documents/categories/all');
+      if (catRes.data && catRes.data.all) {
+        setCategories(catRes.data.all);
+      }
 
-  const handleUploadSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.title) {
-      toast.error('Document title is required');
+      // Fetch Documents from API
+      const params = {};
+      if (selectedCategory !== 'All') params.category = selectedCategory;
+      if (selectedStatus !== 'All') params.status = selectedStatus;
+      if (expiryFilter !== 'All') params.expired = expiryFilter;
+      if (searchQuery) params.search = searchQuery;
+
+      const res = await axios.get(`http://localhost:5000/api/documents/employee/${employeeId}`, {
+        params,
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (Array.isArray(res.data)) {
+        setDocuments(res.data);
+      }
+    } catch (err) {
+      console.warn('API call failed, fallback to local state:', err.message);
+      // Fallback state if server endpoint is offline
+      if (initialDocs && initialDocs.length > 0 && documents.length === 0) {
+        setDocuments(initialDocs);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [employeeId, selectedCategory, selectedStatus, expiryFilter, searchQuery, token]);
+
+  useEffect(() => {
+    fetchDocuments();
+  }, [fetchDocuments]);
+
+  // 2. Upload / Replace Document Handler
+  const handleUploadSubmit = async (formData, replaceId = null) => {
+    if (replaceId) {
+      // Replace file API
+      const res = await axios.post(`http://localhost:5000/api/documents/${replaceId}/replace`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.data?.document) {
+        setDocuments(prev => prev.map(d => (d._id === replaceId ? res.data.document : d)));
+      }
+    } else {
+      // Upload document API
+      formData.append('employeeId', employeeId);
+      const res = await axios.post('http://localhost:5000/api/documents/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.data?.documents) {
+        setDocuments(prev => [...res.data.documents, ...prev]);
+      }
+    }
+    fetchDocuments();
+  };
+
+  // 3. Download Document
+  const handleDownload = (doc) => {
+    const downloadUrl = doc.fileMetadata?.secureUrl || doc.fileUrl;
+    if (!downloadUrl) {
+      toast.error('File link not available');
       return;
     }
-    const fakeCloudinaryUrl = formData.fileUrl || `https://res.cloudinary.com/demo/image/upload/v1/sample_${Date.now()}.pdf`;
-    onUploadDocument({
-      title: formData.title,
-      type: formData.type,
-      fileUrl: fakeCloudinaryUrl,
-      uploadDate: new Date(),
-    });
-    setIsUploadOpen(false);
-    setFormData({ title: '', type: 'Resume', fileUrl: '' });
-    toast.success('Document uploaded successfully to Cloudinary storage');
+    toast.success(`Downloading ${doc.title}...`);
+    window.open(downloadUrl, '_blank');
   };
 
-  const handleDownload = (doc) => {
-    toast.success(`Downloading ${doc.title}...`);
-    window.open(doc.fileUrl, '_blank');
+  // 4. Verify Document
+  const handleVerifySubmit = async (docId, status, comments) => {
+    const res = await axios.patch(
+      `http://localhost:5000/api/documents/${docId}/verify`,
+      { status, comments },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (res.data?.document) {
+      setDocuments(prev => prev.map(d => (d._id === docId ? res.data.document : d)));
+    }
   };
+
+  // 5. Rollback Version
+  const handleRollbackVersion = async (docId, targetVersion) => {
+    const res = await axios.post(
+      `http://localhost:5000/api/documents/${docId}/rollback/${targetVersion}`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (res.data?.document) {
+      setDocuments(prev => prev.map(d => (d._id === docId ? res.data.document : d)));
+    }
+  };
+
+  // 6. Delete Document
+  const handleDeleteDocument = async (docId) => {
+    if (window.confirm('Are you sure you want to delete this document from enterprise storage?')) {
+      try {
+        await axios.delete(`http://localhost:5000/api/documents/${docId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setDocuments(prev => prev.filter(d => d._id !== docId));
+        toast.success('Document deleted successfully');
+      } catch (err) {
+        toast.error(err.response?.data?.message || 'Failed to delete document');
+      }
+    }
+  };
+
+  // 7. Create Custom Category
+  const handleCategoryCreated = async (name, description) => {
+    const res = await axios.post(
+      'http://localhost:5000/api/documents/categories',
+      { name, description },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (res.data?.category) {
+      setCategories(prev => [...prev, res.data.category.name]);
+    }
+  };
+
+  // 8. Rename Metadata Submit
+  const handleRenameSubmit = async (e) => {
+    e.preventDefault();
+    if (!renameTargetDoc || !renameTitle.trim()) return;
+
+    try {
+      const res = await axios.put(
+        `http://localhost:5000/api/documents/${renameTargetDoc._id}/rename`,
+        { title: renameTitle.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data?.document) {
+        setDocuments(prev => prev.map(d => (d._id === renameTargetDoc._id ? res.data.document : d)));
+      }
+      toast.success('Document renamed successfully');
+      setRenameTargetDoc(null);
+      setRenameTitle('');
+    } catch (err) {
+      toast.error('Failed to rename document');
+    }
+  };
+
+  // Client Filtered Documents
+  const filteredDocs = documents.filter((doc) => {
+    const matchesSearch =
+      !searchQuery ||
+      doc.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doc.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doc.audit?.uploadedBy?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesCategory = selectedCategory === 'All' || doc.category === selectedCategory;
+    const matchesStatus = selectedStatus === 'All' || doc.verification?.status === selectedStatus;
+
+    let matchesExpiry = true;
+    if (expiryFilter === 'expired') matchesExpiry = doc.expiryDetails?.isExpired;
+    else if (expiryFilter === 'expiring') matchesExpiry = doc.expiryDetails?.isExpiringSoon;
+
+    return matchesSearch && matchesCategory && matchesStatus && matchesExpiry;
+  });
 
   return (
-    <div className="glass-card space-y-6">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-        <div>
-          <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-indigo-400" />
-            Documents Repository
-          </h2>
-          <p className="text-xs text-slate-400">Identity documents, certificates, and employment contracts</p>
-        </div>
+    <div className="space-y-6">
+      {/* Document Search & Filter Controls */}
+      <DocumentFilter
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        selectedStatus={selectedStatus}
+        setSelectedStatus={setSelectedStatus}
+        expiryFilter={expiryFilter}
+        setExpiryFilter={setExpiryFilter}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        categories={categories}
+        userRole={userRole}
+        onOpenUpload={() => {
+          setReplaceTargetDoc(null);
+          setIsUploadOpen(true);
+        }}
+        onOpenCategoryManager={() => setIsCategoryManagerOpen(true)}
+      />
 
-        <button onClick={() => setIsUploadOpen(true)} className="btn-primary text-xs py-1.5 px-3.5">
-          <UploadCloud className="w-4 h-4" /> Upload Document
-        </button>
-      </div>
+      {/* Main Content Display (Grid or Table View) */}
+      {viewMode === 'grid' ? (
+        <DocumentGrid
+          documents={filteredDocs}
+          userRole={userRole}
+          onPreview={(doc) => setPreviewDoc(doc)}
+          onDownload={handleDownload}
+          onReplace={(doc) => {
+            setReplaceTargetDoc(doc);
+            setIsUploadOpen(true);
+          }}
+          onRename={(doc) => {
+            setRenameTargetDoc(doc);
+            setRenameTitle(doc.title);
+          }}
+          onDelete={handleDeleteDocument}
+          onVersionHistory={(doc) => setVersionHistoryDoc(doc)}
+          onVerify={(doc) => setVerifyTargetDoc(doc)}
+        />
+      ) : (
+        <DocumentTable
+          documents={filteredDocs}
+          userRole={userRole}
+          onPreview={(doc) => setPreviewDoc(doc)}
+          onDownload={handleDownload}
+          onReplace={(doc) => {
+            setReplaceTargetDoc(doc);
+            setIsUploadOpen(true);
+          }}
+          onRename={(doc) => {
+            setRenameTargetDoc(doc);
+            setRenameTitle(doc.title);
+          }}
+          onDelete={handleDeleteDocument}
+          onVersionHistory={(doc) => setVersionHistoryDoc(doc)}
+          onVerify={(doc) => setVerifyTargetDoc(doc)}
+        />
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {documents.length > 0 ? (
-          documents.map((doc) => (
-            <div key={doc._id || doc.title} className="p-4 rounded-2xl bg-slate-800/40 border border-slate-800 space-y-3 flex flex-col justify-between group hover:border-slate-700 transition-all">
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-[10px] font-bold uppercase">
-                    {doc.type}
-                  </span>
-                  <span className="text-[10px] text-slate-500 font-mono">
-                    {new Date(doc.uploadDate).toLocaleDateString()}
-                  </span>
-                </div>
-                <h3 className="font-bold text-slate-100 text-sm truncate group-hover:text-indigo-400 transition-colors" title={doc.title}>
-                  {doc.title}
-                </h3>
-              </div>
+      {/* Modals */}
+      <UploadModal
+        isOpen={isUploadOpen}
+        onClose={() => {
+          setIsUploadOpen(false);
+          setReplaceTargetDoc(null);
+        }}
+        categories={categories}
+        onUploadSuccess={handleUploadSubmit}
+        replaceDoc={replaceTargetDoc}
+      />
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800/60">
-                <button
-                  onClick={() => setPreviewDoc(doc)}
-                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1 border border-slate-700 transition-colors"
-                  title="Preview"
-                >
-                  <Eye className="w-3.5 h-3.5" /> Preview
-                </button>
-                <button
-                  onClick={() => handleDownload(doc)}
-                  className="p-1.5 rounded-lg bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 text-xs font-semibold flex items-center gap-1 border border-indigo-500/20 transition-colors"
-                  title="Download"
-                >
-                  <Download className="w-3.5 h-3.5" /> Download
-                </button>
-                <button
-                  onClick={() => onDeleteDocument(doc._id)}
-                  className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-semibold flex items-center gap-1 border border-rose-500/20 transition-colors"
-                  title="Delete"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="col-span-full py-8 text-center text-xs text-slate-500">
-            No documents uploaded yet. Click "Upload Document" above.
-          </div>
-        )}
-      </div>
+      <PreviewModal
+        isOpen={!!previewDoc}
+        doc={previewDoc}
+        onClose={() => setPreviewDoc(null)}
+        onDownload={handleDownload}
+      />
 
-      {/* Upload Modal */}
+      <VersionHistoryModal
+        isOpen={!!versionHistoryDoc}
+        doc={versionHistoryDoc}
+        onClose={() => setVersionHistoryDoc(null)}
+        onRollback={handleRollbackVersion}
+        userRole={userRole}
+      />
+
+      <VerificationModal
+        isOpen={!!verifyTargetDoc}
+        doc={verifyTargetDoc}
+        onClose={() => setVerifyTargetDoc(null)}
+        onVerify={handleVerifySubmit}
+      />
+
+      <CategoryManagerModal
+        isOpen={isCategoryManagerOpen}
+        onClose={() => setIsCategoryManagerOpen(false)}
+        onCategoryCreated={handleCategoryCreated}
+      />
+
+      {/* Rename Modal */}
       <AnimatePresence>
-        {isUploadOpen && (
+        {renameTargetDoc && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="glass-card w-full max-w-md bg-slate-900 border-slate-700 p-6 space-y-5 relative"
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="glass-card w-full max-w-md bg-slate-900 border-slate-700 p-6 space-y-4 shadow-2xl"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 className="text-lg font-bold text-slate-100">Upload New Document</h3>
-                <button onClick={() => setIsUploadOpen(false)} className="text-slate-400 hover:text-slate-200">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleUploadSubmit} className="space-y-4 text-sm">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Document Title *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Passport Copy 2024"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Document Category</label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+              <h3 className="text-base font-bold text-slate-100">Rename Document</h3>
+              <form onSubmit={handleRenameSubmit} className="space-y-4">
+                <input
+                  type="text"
+                  required
+                  value={renameTitle}
+                  onChange={(e) => setRenameTitle(e.target.value)}
+                  className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-indigo-500"
+                />
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setRenameTargetDoc(null)}
+                    className="btn-secondary text-xs py-1.5 px-3"
                   >
-                    <option value="Resume">Resume / CV</option>
-                    <option value="Offer Letter">Offer Letter</option>
-                    <option value="Experience Letter">Experience Letter</option>
-                    <option value="PAN">PAN Card</option>
-                    <option value="Aadhaar">Aadhaar / ID Card</option>
-                    <option value="Certificate">Certificate</option>
-                    <option value="Other">Other Document</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Cloud File / Upload URL</label>
-                  <input
-                    type="url"
-                    placeholder="https://res.cloudinary.com/..."
-                    value={formData.fileUrl}
-                    onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
-                    className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500 text-xs"
-                  />
-                  <span className="text-[10px] text-slate-500 mt-1 block">Simulates direct Cloudinary secure file storage</span>
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
-                  <button type="button" onClick={() => setIsUploadOpen(false)} className="btn-secondary text-xs">
                     Cancel
                   </button>
-                  <button type="submit" className="btn-primary text-xs">
-                    Upload & Store
+                  <button type="submit" className="btn-primary text-xs py-1.5 px-4">
+                    Save Title
                   </button>
                 </div>
               </form>
             </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Preview Modal */}
-      <AnimatePresence>
-        {previewDoc && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
-            <div className="glass-card w-full max-w-3xl bg-slate-900 border-slate-700 p-6 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 className="text-base font-bold text-slate-100">{previewDoc.title}</h3>
-                <button onClick={() => setPreviewDoc(null)} className="text-slate-400 hover:text-slate-200">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="h-96 bg-slate-950 rounded-xl flex items-center justify-center border border-slate-800 text-slate-400 text-xs">
-                Document Preview Window &bull; {previewDoc.fileUrl}
-              </div>
-            </div>
           </div>
         )}
       </AnimatePresence>
