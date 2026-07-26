@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, Users, Clock, FileText, Calendar, Settings, LogOut, Shield, Sparkles, Building2, TrendingUp, Bell, DollarSign, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Users, Clock, FileText, Calendar, Settings, LogOut, Shield, Sparkles, Building2, TrendingUp, Bell, DollarSign, ShieldCheck, LifeBuoy } from 'lucide-react';
 import useAuthStore from '../stores/useAuthStore';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -20,6 +20,7 @@ const Sidebar = ({ activePage }) => {
       { id: 'payroll', icon: DollarSign, label: 'Payroll', path: '/admin/payroll' },
       { id: 'notifications', icon: Bell, label: 'Notifications', path: '/admin/notifications' },
       { id: 'audit-logs', icon: ShieldCheck, label: 'Audit Logs', path: '/admin/audit-logs' },
+      { id: 'helpdesk', icon: LifeBuoy, label: 'Help Desk', path: '/admin/helpdesk' },
       { id: 'attendance', icon: Clock, label: 'Attendance', path: '/admin/attendance' },
       { id: 'leave', icon: Calendar, label: 'Leave Requests', path: '/admin/leave' },
       { id: 'reports', icon: FileText, label: 'Analytics & Reports', path: '/admin/reports' },
@@ -33,12 +34,14 @@ const Sidebar = ({ activePage }) => {
       { id: 'payroll', icon: DollarSign, label: 'Payroll', path: '/admin/payroll' },
       { id: 'notifications', icon: Bell, label: 'Notifications', path: '/admin/notifications' },
       { id: 'audit-logs', icon: ShieldCheck, label: 'Audit Logs', path: '/admin/audit-logs' },
+      { id: 'helpdesk', icon: LifeBuoy, label: 'Help Desk', path: '/admin/helpdesk' },
       { id: 'attendance', icon: Clock, label: 'Attendance', path: '/admin/attendance' },
       { id: 'leave', icon: Calendar, label: 'Leave Requests', path: '/admin/leave' },
       { id: 'reports', icon: FileText, label: 'Reports', path: '/admin/reports' },
       { id: 'settings', icon: Settings, label: 'Settings', path: '/admin/settings' },
     ],
     employee: [
+      { id: 'helpdesk', icon: LifeBuoy, label: 'Help Desk', path: '/admin/helpdesk' },
       { id: 'payroll', icon: DollarSign, label: 'My Salary Slips', path: '/admin/payroll' },
       { id: 'notifications', icon: Bell, label: 'Notifications', path: '/admin/notifications' },
       { id: 'performance', icon: TrendingUp, label: 'Performance', path: '/admin/performance' },

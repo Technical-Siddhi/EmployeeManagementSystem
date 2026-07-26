@@ -19,6 +19,7 @@ import PerformanceManagement from "./pages/PerformanceManagement";
 import NotificationCenter from "./pages/NotificationCenter";
 import PayrollManagement from "./pages/PayrollManagement";
 import AuditLogs from "./pages/AuditLogs";
+import HelpDeskManagement from "./pages/HelpDeskManagement";
 
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -138,6 +139,14 @@ function App() {
             element={
               <ProtectedRoute roles={['admin','hr']}>
                 <AuditLogs />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/helpdesk"
+            element={
+              <ProtectedRoute roles={['admin','hr','employee']}>
+                <HelpDeskManagement />
               </ProtectedRoute>
             }
           />

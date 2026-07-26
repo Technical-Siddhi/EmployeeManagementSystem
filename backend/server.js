@@ -15,6 +15,7 @@ const performanceRoutes = require('./routes/performance');
 const notificationRoutes = require('./routes/notifications');
 const payrollRoutes = require('./routes/payroll');
 const auditLogRoutes = require('./routes/auditLogs');
+const helpdeskRoutes = require('./routes/helpdesk');
 
 dotenv.config();
 
@@ -58,6 +59,7 @@ app.use('/api/performance', performanceRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/payroll', payrollRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
+app.use('/api/helpdesk', helpdeskRoutes);
 
 // DB Connection with retry and specific DB
 
