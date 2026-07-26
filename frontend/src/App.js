@@ -20,6 +20,7 @@ import NotificationCenter from "./pages/NotificationCenter";
 import PayrollManagement from "./pages/PayrollManagement";
 import AuditLogs from "./pages/AuditLogs";
 import HelpDeskManagement from "./pages/HelpDeskManagement";
+import AIAssistant from "./pages/AIAssistant";
 
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -147,6 +148,14 @@ function App() {
             element={
               <ProtectedRoute roles={['admin','hr','employee']}>
                 <HelpDeskManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/ai-assistant"
+            element={
+              <ProtectedRoute roles={['admin','hr','employee']}>
+                <AIAssistant />
               </ProtectedRoute>
             }
           />
