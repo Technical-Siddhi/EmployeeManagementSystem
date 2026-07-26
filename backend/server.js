@@ -3,11 +3,13 @@ const cors = require('cors');
 const dns = require('dns').setDefaultResultOrder('ipv4first');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const path = require('path');
 const authRoutes = require('./routes/auth');
 const attendanceRoutes = require('./routes/attendance');
 const usersRoutes = require('./routes/users');
 const leavesRoutes = require('./routes/leaves');
 const profileRoutes = require('./routes/profile');
+const documentRoutes = require('./routes/documents');
 
 dotenv.config();
 
@@ -21,6 +23,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -28,6 +31,7 @@ app.use('/api/attendance', attendanceRoutes); // TODO
 app.use('/api/users', usersRoutes);
 app.use('/api/leaves', leavesRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/documents', documentRoutes);
 
 // DB Connection with retry and specific DB
 
