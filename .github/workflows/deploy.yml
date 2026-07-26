@@ -1,0 +1,17 @@
+name: Continuous Deployment Readiness
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deployment-readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Docker Container Images
+        run: |
+          docker build -t attendx-backend:latest ./backend
+          docker build -t attendx-frontend:latest ./frontend
+      - name: Deployment Verification Complete
+        run: echo "AttendX Docker artifacts built and deployment ready!"

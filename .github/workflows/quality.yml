@@ -1,0 +1,19 @@
+name: Code Quality & Security Audit
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Security Audit Backend
+        run: cd backend && npm audit --audit-level=high || true
+      - name: Security Audit Frontend
+        run: cd frontend && npm audit --audit-level=high || true

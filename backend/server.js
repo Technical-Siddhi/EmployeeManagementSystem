@@ -4,6 +4,15 @@ const dns = require('dns').setDefaultResultOrder('ipv4first');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan');
+const mongoSanitize = require('express-mongo-sanitize');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
+const logger = require('./config/logger');
+const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
+
 const authRoutes = require('./routes/auth');
 const attendanceRoutes = require('./routes/attendance');
 const usersRoutes = require('./routes/users');
@@ -17,11 +26,17 @@ const payrollRoutes = require('./routes/payroll');
 const auditLogRoutes = require('./routes/auditLogs');
 const helpdeskRoutes = require('./routes/helpdesk');
 const aiRoutes = require('./routes/ai');
+const healthRoutes = require('./routes/health');
 
 dotenv.config();
 
-
 const app = express();
+
+// Security & Performance Middlewares
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(compression());
+app.use(mongoSanitize());
+app.use(morgan('combined', { stream: { write: (message) => logger.http(message.trim()) } }));
 
 // CORS configuration supporting local development and production Vercel/Render deployments
 const allowedOrigins = [
@@ -31,7 +46,6 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
     if (!origin) return callback(null, true);
     if (
       allowedOrigins.includes(origin) ||
@@ -40,17 +54,21 @@ app.use(cors({
     ) {
       return callback(null, true);
     }
-    return callback(null, true); // Fallback allow for public API client endpoints
+    return callback(null, true);
   },
   credentials: true
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
+// Health Check & Documentation
+app.use('/health', healthRoutes);
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/attendance', attendanceRoutes); // TODO
+app.use('/api/attendance', attendanceRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/leaves', leavesRoutes);
 app.use('/api/profile', profileRoutes);
@@ -62,6 +80,10 @@ app.use('/api/payroll', payrollRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/helpdesk', helpdeskRoutes);
 app.use('/api/ai', aiRoutes);
+
+// Error Handling Middlewares
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 // DB Connection with retry and specific DB
 
