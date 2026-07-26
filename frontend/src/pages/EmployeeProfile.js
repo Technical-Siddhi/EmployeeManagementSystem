@@ -239,6 +239,7 @@ const EmployeeProfile = ({ defaultTab = 'overview' }) => {
                 { id: 'education', label: 'Education & Experience', icon: GraduationCap },
                 { id: 'skills', label: 'Skills & Endorsements', icon: Code },
                 { id: 'documents', label: 'Enterprise Documents', icon: FileText },
+                { id: 'activity', label: 'Activity Log', icon: Shield },
                 ...(userRole !== 'employee' ? [{ id: 'salary', label: 'Salary & Compensation', icon: DollarSign }] : []),
               ].map((tab) => {
                 const IconComp = tab.icon;
@@ -352,6 +353,18 @@ const EmployeeProfile = ({ defaultTab = 'overview' }) => {
                     employeeId={id || profile.employeeId || 'EMP-1004'}
                     documents={profile.documents}
                   />
+                </motion.div>
+              )}
+
+              {activeTab === 'activity' && (
+                <motion.div
+                  key="activity"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-8"
+                >
+                  <ActivityTimeline timeline={profile.timeline} />
                 </motion.div>
               )}
 
