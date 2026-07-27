@@ -40,18 +40,45 @@ function App() {
 
           <Route path="/" element={<Landing />} />
 
+          {/* Role-Specific Dashboards */}
           <Route
             path="/admin/dashboard"
             element={
-              <ProtectedRoute roles={['admin','hr','employee']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin']}>
                 <AdminDashboard />
               </ProtectedRoute>
             }
           />
           <Route
+            path="/hr/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['HR', 'hr', 'Admin', 'admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/manager/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['Manager', 'manager', 'Admin', 'admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['Employee', 'employee', 'Admin', 'admin', 'HR', 'hr', 'Manager', 'manager']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Module Routes */}
+          <Route
             path="/admin/employees"
             element={
-              <ProtectedRoute roles={['admin','hr']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin', 'HR', 'hr', 'Manager', 'manager']}>
                 <Employees />
               </ProtectedRoute>
             }
@@ -59,7 +86,7 @@ function App() {
           <Route
             path="/admin/employees/:id"
             element={
-              <ProtectedRoute roles={['admin','hr','employee']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin', 'HR', 'hr', 'Manager', 'manager', 'Employee', 'employee']}>
                 <EmployeeProfile />
               </ProtectedRoute>
             }
@@ -67,7 +94,7 @@ function App() {
           <Route
             path="/admin/employees/:id/documents"
             element={
-              <ProtectedRoute roles={['admin','hr','employee']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin', 'HR', 'hr', 'Manager', 'manager', 'Employee', 'employee']}>
                 <EmployeeProfile defaultTab="documents" />
               </ProtectedRoute>
             }
@@ -75,7 +102,7 @@ function App() {
           <Route
             path="/admin/attendance"
             element={
-              <ProtectedRoute roles={['admin','employee','hr']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin', 'HR', 'hr', 'Manager', 'manager', 'Employee', 'employee']}>
                 <Attendance />
               </ProtectedRoute>
             }
@@ -83,7 +110,7 @@ function App() {
           <Route
             path="/admin/leave"
             element={
-              <ProtectedRoute roles={['admin','hr','employee']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin', 'HR', 'hr', 'Manager', 'manager', 'Employee', 'employee']}>
                 <LeaveManagement />
               </ProtectedRoute>
             }
@@ -91,7 +118,7 @@ function App() {
           <Route
             path="/admin/reports"
             element={
-              <ProtectedRoute roles={['admin','hr']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin', 'HR', 'hr', 'Manager', 'manager']}>
                 <Reports />
               </ProtectedRoute>
             }
@@ -99,18 +126,15 @@ function App() {
           <Route
             path="/admin/settings"
             element={
-              <ProtectedRoute roles={['admin','hr','employee']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin', 'HR', 'hr', 'Manager', 'manager', 'Employee', 'employee']}>
                 <Settings />
               </ProtectedRoute>
             }
           />
-
-
-
           <Route
             path="/admin/organization"
             element={
-              <ProtectedRoute roles={['admin','hr']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin', 'HR', 'hr']}>
                 <OrganizationManagement />
               </ProtectedRoute>
             }
@@ -118,7 +142,7 @@ function App() {
           <Route
             path="/admin/performance"
             element={
-              <ProtectedRoute roles={['admin','hr','employee']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin', 'HR', 'hr', 'Manager', 'manager', 'Employee', 'employee']}>
                 <PerformanceManagement />
               </ProtectedRoute>
             }
@@ -126,7 +150,7 @@ function App() {
           <Route
             path="/admin/notifications"
             element={
-              <ProtectedRoute roles={['admin','hr','employee']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin', 'HR', 'hr', 'Manager', 'manager', 'Employee', 'employee']}>
                 <NotificationCenter />
               </ProtectedRoute>
             }
@@ -134,7 +158,7 @@ function App() {
           <Route
             path="/admin/payroll"
             element={
-              <ProtectedRoute roles={['admin','hr','employee']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin', 'HR', 'hr', 'Manager', 'manager', 'Employee', 'employee']}>
                 <PayrollManagement />
               </ProtectedRoute>
             }
@@ -142,7 +166,7 @@ function App() {
           <Route
             path="/admin/audit-logs"
             element={
-              <ProtectedRoute roles={['admin','hr']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin', 'HR', 'hr']}>
                 <AuditLogs />
               </ProtectedRoute>
             }
@@ -150,7 +174,7 @@ function App() {
           <Route
             path="/admin/helpdesk"
             element={
-              <ProtectedRoute roles={['admin','hr','employee']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin', 'HR', 'hr', 'Manager', 'manager', 'Employee', 'employee']}>
                 <HelpDeskManagement />
               </ProtectedRoute>
             }
@@ -158,7 +182,65 @@ function App() {
           <Route
             path="/admin/ai-assistant"
             element={
-              <ProtectedRoute roles={['admin','hr','employee']}>
+              <ProtectedRoute allowedRoles={['Admin', 'admin', 'HR', 'hr', 'Manager', 'manager', 'Employee', 'employee']}>
+                <AIAssistant />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Employee Route Aliases */}
+          <Route
+            path="/employee/attendance"
+            element={
+              <ProtectedRoute allowedRoles={['Employee', 'employee', 'Admin', 'admin']}>
+                <Attendance />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee/leave"
+            element={
+              <ProtectedRoute allowedRoles={['Employee', 'employee', 'Admin', 'admin']}>
+                <LeaveManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee/settings"
+            element={
+              <ProtectedRoute allowedRoles={['Employee', 'employee', 'Admin', 'admin']}>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee/performance"
+            element={
+              <ProtectedRoute allowedRoles={['Employee', 'employee', 'Admin', 'admin']}>
+                <PerformanceManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee/notifications"
+            element={
+              <ProtectedRoute allowedRoles={['Employee', 'employee', 'Admin', 'admin']}>
+                <NotificationCenter />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee/helpdesk"
+            element={
+              <ProtectedRoute allowedRoles={['Employee', 'employee', 'Admin', 'admin']}>
+                <HelpDeskManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee/ai-assistant"
+            element={
+              <ProtectedRoute allowedRoles={['Employee', 'employee', 'Admin', 'admin']}>
                 <AIAssistant />
               </ProtectedRoute>
             }

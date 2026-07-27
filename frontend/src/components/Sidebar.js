@@ -8,7 +8,8 @@ import toast from 'react-hot-toast';
 const Sidebar = ({ activePage }) => {
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
-  const role = useAuthStore((state) => state.role) || 'admin';
+  const rawRole = useAuthStore((state) => state.role) || user?.role || 'admin';
+  const role = rawRole.toString().toLowerCase().trim();
   const navigate = useNavigate();
 
   const menuItemsByRole = {
@@ -28,7 +29,7 @@ const Sidebar = ({ activePage }) => {
       { id: 'settings', icon: Settings, label: 'Settings', path: '/admin/settings' },
     ],
     hr: [
-      { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
+      { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', path: '/hr/dashboard' },
       { id: 'employees', icon: Users, label: 'Employees', path: '/admin/employees' },
       { id: 'organization', icon: Building2, label: 'Organization', path: '/admin/organization' },
       { id: 'performance', icon: TrendingUp, label: 'Performance', path: '/admin/performance' },
@@ -42,7 +43,20 @@ const Sidebar = ({ activePage }) => {
       { id: 'reports', icon: FileText, label: 'Reports', path: '/admin/reports' },
       { id: 'settings', icon: Settings, label: 'Settings', path: '/admin/settings' },
     ],
+    manager: [
+      { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', path: '/manager/dashboard' },
+      { id: 'employees', icon: Users, label: 'Team Members', path: '/admin/employees' },
+      { id: 'performance', icon: TrendingUp, label: 'Performance', path: '/admin/performance' },
+      { id: 'notifications', icon: Bell, label: 'Notifications', path: '/admin/notifications' },
+      { id: 'helpdesk', icon: LifeBuoy, label: 'Help Desk', path: '/admin/helpdesk' },
+      { id: 'ai-assistant', icon: Sparkles, label: 'AI Assistant', path: '/admin/ai-assistant' },
+      { id: 'attendance', icon: Clock, label: 'Attendance', path: '/admin/attendance' },
+      { id: 'leave', icon: Calendar, label: 'Leave Approvals', path: '/admin/leave' },
+      { id: 'reports', icon: FileText, label: 'Reports', path: '/admin/reports' },
+      { id: 'settings', icon: Settings, label: 'Settings', path: '/admin/settings' },
+    ],
     employee: [
+      { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', path: '/employee/dashboard' },
       { id: 'ai-assistant', icon: Sparkles, label: 'AI Assistant', path: '/admin/ai-assistant' },
       { id: 'helpdesk', icon: LifeBuoy, label: 'Help Desk', path: '/admin/helpdesk' },
       { id: 'payroll', icon: DollarSign, label: 'My Salary Slips', path: '/admin/payroll' },

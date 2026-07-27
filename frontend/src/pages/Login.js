@@ -20,6 +20,7 @@ import useAuthStore from '../stores/useAuthStore';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { GoogleLogin } from '@react-oauth/google';
+import { getDashboardRouteByRole } from '../utils/roleNavigation';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -30,12 +31,14 @@ const Login = () => {
 
   const login = useAuthStore((state) => state.login);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+  const userRole = useAuthStore((state) => state.role) || user?.role;
 
   useEffect(() => {
     if (isAuthenticated()) {
-      navigate('/admin/dashboard');
+      navigate(getDashboardRouteByRole(userRole));
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, userRole]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,7 +52,9 @@ const Login = () => {
 
     if (result.success) {
       toast.success('Welcome back!');
-      navigate('/admin/dashboard');
+      const loggedUser = useAuthStore.getState().user;
+      const loggedRole = useAuthStore.getState().role || loggedUser?.role;
+      navigate(getDashboardRouteByRole(loggedRole));
     } else {
       toast.error(result.error || 'Login failed. Check your credentials.');
     }
@@ -302,7 +307,7 @@ const Login = () => {
                         localStorage.setItem('token', res.data.token);
                         useAuthStore.setState({ token: res.data.token, user: res.data.user, role: res.data.user?.role });
                         toast.success('Signed in with Google!');
-                        navigate('/admin/dashboard');
+                        navigate(getDashboardRouteByRole(res.data.user?.role));
                       }
                     } catch (err) {
                       const msg = err.response?.data?.message || 'Google authentication failed';

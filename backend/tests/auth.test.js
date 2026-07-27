@@ -18,7 +18,7 @@ jest.mock('../services/googleAuthService', () => ({
   }),
 }));
 
-describe('Authentication API Suite (Login, Register & Google OAuth)', () => {
+describe('Authentication API Suite (Login, Register & Role Verification)', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -32,6 +32,66 @@ describe('Authentication API Suite (Login, Register & Google OAuth)', () => {
 
       expect(res.statusCode).toEqual(400);
       expect(res.body).toHaveProperty('msg', 'email and password are required');
+    });
+
+    it('should return 200 OK with token and preserved role for Employee login', async () => {
+      const mockEmployee = {
+        _id: '60d5ec49f1b2c80015f8d9b2',
+        email: 'employee@company.com',
+        name: 'Regular Employee',
+        role: 'Employee',
+        comparePassword: jest.fn().mockResolvedValue(true),
+      };
+
+      User.findOne.mockResolvedValue(mockEmployee);
+
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'employee@company.com', password: 'Password123!' });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('token');
+      expect(res.body.user).toHaveProperty('role', 'Employee');
+    });
+
+    it('should return 200 OK with token and preserved role for HR login', async () => {
+      const mockHR = {
+        _id: '60d5ec49f1b2c80015f8d9b3',
+        email: 'hr@company.com',
+        name: 'HR Manager',
+        role: 'HR',
+        comparePassword: jest.fn().mockResolvedValue(true),
+      };
+
+      User.findOne.mockResolvedValue(mockHR);
+
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'hr@company.com', password: 'Password123!' });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('token');
+      expect(res.body.user).toHaveProperty('role', 'HR');
+    });
+
+    it('should return 200 OK with token and preserved role for Manager login', async () => {
+      const mockManager = {
+        _id: '60d5ec49f1b2c80015f8d9b4',
+        email: 'manager@company.com',
+        name: 'Team Lead Manager',
+        role: 'Manager',
+        comparePassword: jest.fn().mockResolvedValue(true),
+      };
+
+      User.findOne.mockResolvedValue(mockManager);
+
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'manager@company.com', password: 'Password123!' });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('token');
+      expect(res.body.user).toHaveProperty('role', 'Manager');
     });
   });
 

@@ -21,6 +21,7 @@ import useAuthStore from '../stores/useAuthStore';
 import toast from 'react-hot-toast';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
+import { getDashboardRouteByRole } from '../utils/roleNavigation';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -50,7 +51,9 @@ const Register = () => {
       const result = await register({ email, password, name, role, department });
       if (result?.success) {
         toast.success(`Account created successfully as ${role.toUpperCase()}!`);
-        navigate('/admin/dashboard');
+        const user = useAuthStore.getState().user;
+        const currentRole = useAuthStore.getState().role || user?.role || role;
+        navigate(getDashboardRouteByRole(currentRole));
       } else {
         toast.error(result?.error || 'Registration failed');
       }
@@ -352,7 +355,7 @@ const Register = () => {
                         localStorage.setItem('token', res.data.token);
                         useAuthStore.setState({ token: res.data.token, user: res.data.user, role: res.data.user?.role });
                         toast.success(`Registered with Google as ${res.data.user.role.toUpperCase()}!`);
-                        navigate('/admin/dashboard');
+                        navigate(getDashboardRouteByRole(res.data.user?.role));
                       }
                     } catch (err) {
                       const msg = err.response?.data?.message || 'Google registration failed';
