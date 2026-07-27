@@ -196,7 +196,7 @@ const Register = () => {
               {/* Role Selection Cards */}
               <div className="mb-6">
                 <label className="block text-xs font-semibold text-slate-300 mb-2">Select Account Role</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <button
                     type="button"
                     onClick={() => setRole('employee')}
@@ -221,6 +221,19 @@ const Register = () => {
                   >
                     <UserCheck className="w-4 h-4 text-purple-400" />
                     <span>HR Manager</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setRole('manager')}
+                    className={`py-2.5 px-2 rounded-xl border text-xs font-semibold flex flex-col items-center justify-center space-y-1 transition-all ${
+                      role === 'manager'
+                        ? 'bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-500/10'
+                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Building2 className="w-4 h-4 text-blue-400" />
+                    <span>Manager</span>
                   </button>
 
                   <button

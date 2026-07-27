@@ -63,15 +63,19 @@ const Login = () => {
   const fillDemoAccount = (role) => {
     if (role === 'admin') {
       setEmail('admin@company.com');
-      setPassword('admin123');
+      setPassword('Password123!');
       toast.success('Filled Admin demo credentials!');
     } else if (role === 'hr') {
       setEmail('hr@company.com');
-      setPassword('hr123456');
+      setPassword('Password123!');
       toast.success('Filled HR demo credentials!');
-    } else if (role === 'employee') {
+    } else if (role === 'manager') {
+      setEmail('manager@company.com');
+      setPassword('Password123!');
+      toast.success('Filled Manager demo credentials!');
+    } else {
       setEmail('employee@company.com');
-      setPassword('employee123');
+      setPassword('Password123!');
       toast.success('Filled Employee demo credentials!');
     }
   };
@@ -186,11 +190,11 @@ const Login = () => {
                   <span>⚡ Quick Demo Credentials</span>
                   <span className="text-[10px] text-slate-400 font-normal">Click to fill</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <button
                     type="button"
                     onClick={() => fillDemoAccount('admin')}
-                    className="px-2.5 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold transition-all flex flex-col items-center justify-center space-y-1"
+                    className="px-2 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold transition-all flex flex-col items-center justify-center space-y-1"
                   >
                     <Building2 className="w-4 h-4 text-indigo-400" />
                     <span>Admin</span>
@@ -199,7 +203,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => fillDemoAccount('hr')}
-                    className="px-2.5 py-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-semibold transition-all flex flex-col items-center justify-center space-y-1"
+                    className="px-2 py-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-semibold transition-all flex flex-col items-center justify-center space-y-1"
                   >
                     <UserCheck className="w-4 h-4 text-purple-400" />
                     <span>HR</span>
@@ -207,8 +211,17 @@ const Login = () => {
 
                   <button
                     type="button"
+                    onClick={() => fillDemoAccount('manager')}
+                    className="px-2 py-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-300 text-xs font-semibold transition-all flex flex-col items-center justify-center space-y-1"
+                  >
+                    <Shield className="w-4 h-4 text-blue-400" />
+                    <span>Manager</span>
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => fillDemoAccount('employee')}
-                    className="px-2.5 py-2 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/30 text-pink-300 text-xs font-semibold transition-all flex flex-col items-center justify-center space-y-1"
+                    className="px-2 py-2 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/30 text-pink-300 text-xs font-semibold transition-all flex flex-col items-center justify-center space-y-1"
                   >
                     <User className="w-4 h-4 text-pink-400" />
                     <span>Employee</span>
