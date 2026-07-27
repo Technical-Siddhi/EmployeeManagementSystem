@@ -8,6 +8,9 @@ import Unauthorized from "./pages/Unauthorized";
 import Landing from "./pages/Landing";
 
 import AdminDashboard from "./pages/AdminDashboard";
+import HrDashboard from "./pages/HrDashboard";
+import ManagerDashboard from "./pages/ManagerDashboard";
+import EmployeeDashboard from "./pages/EmployeeDashboard";
 import Employees from "./pages/Employees";
 import Attendance from "./pages/Attendance";
 import LeaveManagement from "./pages/LeaveManagement";
@@ -53,7 +56,7 @@ function App() {
             path="/hr/dashboard"
             element={
               <ProtectedRoute allowedRoles={['HR', 'hr', 'Admin', 'admin']}>
-                <AdminDashboard />
+                <HrDashboard />
               </ProtectedRoute>
             }
           />
@@ -61,15 +64,15 @@ function App() {
             path="/manager/dashboard"
             element={
               <ProtectedRoute allowedRoles={['Manager', 'manager', 'Admin', 'admin']}>
-                <AdminDashboard />
+                <ManagerDashboard />
               </ProtectedRoute>
             }
           />
           <Route
             path="/employee/dashboard"
             element={
-              <ProtectedRoute allowedRoles={['Employee', 'employee', 'Admin', 'admin', 'HR', 'hr', 'Manager', 'manager']}>
-                <AdminDashboard />
+              <ProtectedRoute allowedRoles={['Employee', 'employee']}>
+                <EmployeeDashboard />
               </ProtectedRoute>
             }
           />

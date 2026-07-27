@@ -16,7 +16,7 @@ router.post('/register', async (req, res) => {
     }
 
     // Allow only known roles. Default will be handled by schema.
-    const allowedRoles = ['admin', 'hr', 'employee'];
+    const allowedRoles = ['admin', 'hr', 'manager', 'employee', 'Admin', 'HR', 'Manager', 'Employee'];
     const safeRole = role && allowedRoles.includes(role) ? role : undefined;
 
     const existingUser = await User.findOne({ email });
