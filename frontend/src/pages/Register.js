@@ -350,7 +350,7 @@ const Register = () => {
 
                       if (res.data.success) {
                         localStorage.setItem('token', res.data.token);
-                        useAuthStore.setState({ token: res.data.token, user: res.data.user });
+                        useAuthStore.setState({ token: res.data.token, user: res.data.user, role: res.data.user?.role });
                         toast.success(`Registered with Google as ${res.data.user.role.toUpperCase()}!`);
                         navigate('/admin/dashboard');
                       }
