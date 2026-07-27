@@ -65,9 +65,9 @@ router.post('/login', async (req, res) => {
 });
 
 // @route   POST api/auth/google
-// @desc    Google OAuth Sign-In for Existing Employees ONLY
+// @desc    Google OAuth Sign-In & Registration
 router.post('/google', async (req, res) => {
-  const { idToken } = req.body;
+  const { idToken, mode, role, department } = req.body;
 
   if (!idToken) {
     return res.status(400).json({ success: false, message: 'Google ID Token is required' });
@@ -78,10 +78,56 @@ router.post('/google', async (req, res) => {
     const AuditLog = require('../models/AuditLog');
 
     const googlePayload = await verifyGoogleToken(idToken);
-    const user = await User.findOne({ email: googlePayload.email });
+    let user = await User.findOne({ email: googlePayload.email });
 
     if (!user) {
-      // Log Security Audit Failure Event
+      if (mode === 'register') {
+        // Create new user from Google registration
+        user = new User({
+          name: googlePayload.name || 'Google User',
+          email: googlePayload.email,
+          role: role || 'employee',
+          department: department || 'General',
+          googleId: googlePayload.googleId,
+          provider: 'google',
+          avatar: googlePayload.avatar,
+          emailVerified: true,
+        });
+        await user.save();
+
+        const token = signToken({ userId: user._id, role: user.role });
+
+        // Log Audit Log Event
+        try {
+          await AuditLog.create({
+            user: user._id,
+            userEmail: user.email,
+            userName: user.name,
+            userRole: user.role,
+            action: 'REGISTER_GOOGLE_SUCCESS',
+            category: 'Security',
+            details: `New user registration via Google OAuth for ${user.email}`,
+            ipAddress: req.ip || req.connection.remoteAddress,
+            status: 'Success',
+          });
+        } catch (logErr) {}
+
+        return res.json({
+          success: true,
+          token,
+          user: {
+            id: user._id,
+            email: user.email,
+            role: user.role,
+            name: user.name,
+            department: user.department,
+            avatar: user.avatar,
+            provider: user.provider,
+          },
+        });
+      }
+
+      // Log Security Audit Failure Event for un-registered login attempt
       try {
         await AuditLog.create({
           action: 'LOGIN_GOOGLE_FAILED',
@@ -94,7 +140,7 @@ router.post('/google', async (req, res) => {
 
       return res.status(403).json({
         success: false,
-        message: 'This email is not registered. Please contact your administrator.',
+        message: 'This email is not registered. Please contact your administrator or register a new account.',
       });
     }
 
@@ -137,87 +183,6 @@ router.post('/google', async (req, res) => {
     });
   } catch (err) {
     res.status(401).json({ success: false, message: `Google authentication failed: ${err.message}` });
-  }
-});
-
-// @route   POST api/auth/social
-// @desc    Multi-Social Sign-In (Facebook, Instagram, Google) for Existing Employees ONLY
-router.post('/social', async (req, res) => {
-  const { provider, email, name, avatar, providerId } = req.body;
-
-  if (!provider || !email) {
-    return res.status(400).json({ success: false, message: 'Provider and email are required' });
-  }
-
-  const validProviders = ['google', 'facebook', 'instagram'];
-  if (!validProviders.includes(provider)) {
-    return res.status(400).json({ success: false, message: 'Invalid social provider' });
-  }
-
-  try {
-    const AuditLog = require('../models/AuditLog');
-    const normalizedEmail = email.toLowerCase().trim();
-    const user = await User.findOne({ email: normalizedEmail });
-
-    if (!user) {
-      // Log Security Audit Failure Event
-      try {
-        await AuditLog.create({
-          action: `LOGIN_${provider.toUpperCase()}_FAILED`,
-          category: 'Security',
-          details: `Unregistered ${provider} social login attempt for email: ${normalizedEmail}`,
-          ipAddress: req.ip || req.connection.remoteAddress,
-          status: 'Failure',
-        });
-      } catch (logErr) {}
-
-      return res.status(403).json({
-        success: false,
-        message: 'This email is not registered. Please contact your administrator.',
-      });
-    }
-
-    // Existing employee account found -> Update social profile fields
-    user.provider = provider;
-    if (provider === 'facebook' && providerId) user.facebookId = providerId;
-    if (provider === 'instagram' && providerId) user.instagramId = providerId;
-    if (provider === 'google' && providerId) user.googleId = providerId;
-    if (avatar) user.avatar = avatar;
-    user.emailVerified = true;
-    await user.save();
-
-    const token = signToken({ userId: user._id, role: user.role });
-
-    // Log Audit Log Success Event
-    try {
-      await AuditLog.create({
-        user: user._id,
-        userEmail: user.email,
-        userName: user.name,
-        userRole: user.role,
-        action: `LOGIN_${provider.toUpperCase()}_SUCCESS`,
-        category: 'Security',
-        details: `Successful ${provider} social login for ${user.email}`,
-        ipAddress: req.ip || req.connection.remoteAddress,
-        status: 'Success',
-      });
-    } catch (logErr) {}
-
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        role: user.role,
-        name: user.name,
-        department: user.department,
-        avatar: user.avatar || avatar,
-        provider: user.provider,
-      },
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: `Social authentication failed: ${err.message}` });
   }
 });
 

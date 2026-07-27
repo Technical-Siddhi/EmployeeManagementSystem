@@ -24,11 +24,9 @@ const userSchema = new mongoose.Schema({
   },
   department: String,
   googleId: String,
-  facebookId: String,
-  instagramId: String,
   provider: {
     type: String,
-    enum: ['local', 'google', 'facebook', 'instagram'],
+    enum: ['local', 'google'],
     default: 'local',
   },
   avatar: String,

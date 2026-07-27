@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import useAuthStore from '../stores/useAuthStore';
 import toast from 'react-hot-toast';
+import { GoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -322,6 +324,52 @@ const Register = () => {
                   <span>{loading ? 'Registering Account...' : 'Complete Registration'}</span>
                 </button>
               </form>
+
+              {/* Google Sign-Up Divider & Button */}
+              <div className="my-6 flex items-center">
+                <div className="flex-1 border-t border-slate-800"></div>
+                <span className="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Or Sign Up with Google
+                </span>
+                <div className="flex-1 border-t border-slate-800"></div>
+              </div>
+
+              <div className="flex justify-center">
+                <GoogleLogin
+                  onSuccess={async (credentialResponse) => {
+                    if (!credentialResponse.credential) return;
+                    setLoading(true);
+                    try {
+                      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+                      const res = await axios.post(`${API_BASE}/api/auth/google`, {
+                        idToken: credentialResponse.credential,
+                        mode: 'register',
+                        role: role,
+                        department: department || 'General'
+                      });
+
+                      if (res.data.success) {
+                        localStorage.setItem('token', res.data.token);
+                        useAuthStore.setState({ token: res.data.token, user: res.data.user });
+                        toast.success(`Registered with Google as ${res.data.user.role.toUpperCase()}!`);
+                        navigate('/admin/dashboard');
+                      }
+                    } catch (err) {
+                      const msg = err.response?.data?.message || 'Google registration failed';
+                      toast.error(msg);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  onError={() => {
+                    toast.error('Google Sign-Up failed');
+                  }}
+                  theme="filled_dark"
+                  size="large"
+                  text="signup_with"
+                  shape="pill"
+                />
+              </div>
 
               <div className="mt-6 text-center text-xs text-slate-400">
                 Already have an account?{' '}
