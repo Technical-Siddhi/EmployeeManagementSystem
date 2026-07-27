@@ -87,6 +87,8 @@ app.use(errorHandler);
 
 // DB Connection with retry and specific DB
 
+const seedDefaultUsers = require('./config/seed');
+
 const connectDB = async () => {
   let retries = 5;
   while (retries) {
@@ -101,6 +103,7 @@ const conn = await mongoose.connect(process.env.MONGO_URI, {
 });
       console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
       console.log(`📊 Database: employee_attendance`);
+      await seedDefaultUsers();
       return;
     } catch (error) {
       console.error(`❌ MongoDB Connection Error (attempt ${6-retries}):`, error.message);
