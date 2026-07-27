@@ -140,6 +140,87 @@ router.post('/google', async (req, res) => {
   }
 });
 
+// @route   POST api/auth/social
+// @desc    Multi-Social Sign-In (Facebook, Instagram, Google) for Existing Employees ONLY
+router.post('/social', async (req, res) => {
+  const { provider, email, name, avatar, providerId } = req.body;
+
+  if (!provider || !email) {
+    return res.status(400).json({ success: false, message: 'Provider and email are required' });
+  }
+
+  const validProviders = ['google', 'facebook', 'instagram'];
+  if (!validProviders.includes(provider)) {
+    return res.status(400).json({ success: false, message: 'Invalid social provider' });
+  }
+
+  try {
+    const AuditLog = require('../models/AuditLog');
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      // Log Security Audit Failure Event
+      try {
+        await AuditLog.create({
+          action: `LOGIN_${provider.toUpperCase()}_FAILED`,
+          category: 'Security',
+          details: `Unregistered ${provider} social login attempt for email: ${normalizedEmail}`,
+          ipAddress: req.ip || req.connection.remoteAddress,
+          status: 'Failure',
+        });
+      } catch (logErr) {}
+
+      return res.status(403).json({
+        success: false,
+        message: 'This email is not registered. Please contact your administrator.',
+      });
+    }
+
+    // Existing employee account found -> Update social profile fields
+    user.provider = provider;
+    if (provider === 'facebook' && providerId) user.facebookId = providerId;
+    if (provider === 'instagram' && providerId) user.instagramId = providerId;
+    if (provider === 'google' && providerId) user.googleId = providerId;
+    if (avatar) user.avatar = avatar;
+    user.emailVerified = true;
+    await user.save();
+
+    const token = signToken({ userId: user._id, role: user.role });
+
+    // Log Audit Log Success Event
+    try {
+      await AuditLog.create({
+        user: user._id,
+        userEmail: user.email,
+        userName: user.name,
+        userRole: user.role,
+        action: `LOGIN_${provider.toUpperCase()}_SUCCESS`,
+        category: 'Security',
+        details: `Successful ${provider} social login for ${user.email}`,
+        ipAddress: req.ip || req.connection.remoteAddress,
+        status: 'Success',
+      });
+    } catch (logErr) {}
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+        department: user.department,
+        avatar: user.avatar || avatar,
+        provider: user.provider,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: `Social authentication failed: ${err.message}` });
+  }
+});
+
 // @route   POST api/auth/logout
 // @desc    Client-side logout (stateless JWT)
 router.post('/logout', async (_req, res) => {
