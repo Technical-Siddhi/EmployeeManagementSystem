@@ -27,8 +27,16 @@ import AIAssistant from "./pages/AIAssistant";
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ProtectedRoute from './components/ProtectedRoute';
+import useAuthStore from './stores/useAuthStore';
+import { getDashboardRouteByRole } from './utils/roleNavigation';
 
 const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || 'dummy_client_id.apps.googleusercontent.com';
+
+const RoleDashboardRedirect = () => {
+  const user = useAuthStore((state) => state.user);
+  const role = useAuthStore((state) => state.role) || user?.role;
+  return <Navigate to={getDashboardRouteByRole(role)} replace />;
+};
 
 function App() {
   return (
@@ -42,6 +50,16 @@ function App() {
           <Route path="/unauthorized" element={<Unauthorized />} />
 
           <Route path="/" element={<Landing />} />
+
+          {/* Generic /dashboard redirect */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <RoleDashboardRedirect />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Role-Specific Dashboards */}
           <Route
